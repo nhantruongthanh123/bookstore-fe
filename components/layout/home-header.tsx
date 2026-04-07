@@ -2,14 +2,25 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Search, ShoppingCart, UserCircle2 } from "lucide-react";
+import { Search, ShoppingCart, UserCircle2, LogOut, User } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useRouter } from "next/navigation";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import Cookies from "js-cookie";
 
 export function HomeHeader() {
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, clearAuth } = useAuthStore();
   const [googleAvatar, setGoogleAvatar] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -27,6 +38,12 @@ export function HomeHeader() {
       }
     }
   }, [isAuthenticated]);
+
+  const handleLogout = () => {
+    Cookies.remove('accessToken');
+    clearAuth();
+    router.push('/login');
+  };
 
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#d9d7d1] px-4 py-4 md:px-8">
@@ -68,18 +85,42 @@ export function HomeHeader() {
         </Link>
 
         {isAuthenticated && user ? (
-          <Link
-            href="/profile"
-            aria-label="Profile"
-            className="rounded-full flex items-center justify-center p-1 text-[#2d3758] transition-colors hover:bg-[#e9e8e2]"
-          >
-            <Avatar className="h-7 w-7 border border-[#d7d5cf] shadow-sm">
-              <AvatarImage src={googleAvatar || ""} alt={user.fullName || user.username} />
-              <AvatarFallback className="bg-[#cd5227] text-white text-[10px] font-semibold">
-                {(user.fullName || user.username || "?").charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger className="rounded-full flex items-center justify-center p-1 text-[#2d3758] transition-colors hover:bg-[#e9e8e2] outline-none">
+              <Avatar className="h-7 w-7 border border-[#d7d5cf] shadow-sm">
+                <AvatarImage src={googleAvatar || ""} alt={user.fullName || user.username} />
+                <AvatarFallback className="bg-[#cd5227] text-white text-[10px] font-semibold">
+                  {(user.fullName || user.username || "?").charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[200px]">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none text-[#161B22] truncate">{user.fullName || user.username}</p>
+                    <p className="text-xs leading-none text-gray-500 truncate">{user.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => window.location.href = '/profile'}
+              >
+                <User className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-red-500 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                onClick={handleLogout}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         ) : (
           <Link
             href="/profile"
