@@ -30,6 +30,10 @@ export interface UserResponse {
   fullName?: string;
   phoneNumber?: string;
   roles: string[];
+  enabled: boolean;
+  accountNonLocked: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface TokenRefreshRequest {

@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import Image from 'next/image';
+import { HomeFooter } from '@/components/layout/home-footer';
+import { HomeHeader } from '@/components/layout/home-header';
 
 export default function BooksPage() {
   const [books, setBooks] = useState<BookResponse[]>([]);
@@ -128,6 +130,7 @@ export default function BooksPage() {
           </Button>
         </div>
       )}
+
     </div>
   );
 }

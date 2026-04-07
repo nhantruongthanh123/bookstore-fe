@@ -3,15 +3,15 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
   // Get auth state from cookie or header
-  const authCookie = request.cookies.get('auth-storage');
-  
-  const isAuthPage = request.nextUrl.pathname.startsWith('/login') || 
-                     request.nextUrl.pathname.startsWith('/register');
-  
+  const authCookie = request.cookies.get('accessToken');
+
+  const isAuthPage = request.nextUrl.pathname.startsWith('/login') ||
+    request.nextUrl.pathname.startsWith('/register');
+
   const isProtectedPage = request.nextUrl.pathname.startsWith('/cart') ||
-                          request.nextUrl.pathname.startsWith('/orders') ||
-                          request.nextUrl.pathname.startsWith('/profile');
-  
+    request.nextUrl.pathname.startsWith('/orders') ||
+    request.nextUrl.pathname.startsWith('/profile');
+
   const isAdminPage = request.nextUrl.pathname.startsWith('/admin');
 
   // Redirect authenticated users away from auth pages

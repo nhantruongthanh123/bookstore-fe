@@ -1,12 +1,38 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Search, ShoppingCart, UserCircle2 } from "lucide-react";
+import { useAuthStore } from "@/lib/store/authStore";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Cookies from "js-cookie";
 
 export function HomeHeader() {
+  const { user, isAuthenticated } = useAuthStore();
+  const [googleAvatar, setGoogleAvatar] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const token = Cookies.get("accessToken");
+      if (token) {
+        try {
+          // Decode the JWT payload to look for Google's picture claim
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          if (payload.picture) {
+            setGoogleAvatar(payload.picture);
+          }
+        } catch (e) {
+          // Fallback gracefully if parsing fails
+        }
+      }
+    }
+  }, [isAuthenticated]);
+
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#d9d7d1] px-4 py-4 md:px-8">
       <div className="flex items-center gap-8">
         <p className="text-2xl font-semibold italic tracking-tight text-[#24304f]">
-          The Curator
+          Book Shop
         </p>
         <nav className="flex items-center gap-5 text-sm text-[#6d6f79]">
           <Link
@@ -40,13 +66,29 @@ export function HomeHeader() {
         >
           <ShoppingCart className="h-5 w-5" />
         </Link>
-        <Link
-          href="/login"
-          aria-label="Account"
-          className="rounded-full p-2 text-[#2d3758] transition-colors hover:bg-[#e9e8e2]"
-        >
-          <UserCircle2 className="h-5 w-5" />
-        </Link>
+
+        {isAuthenticated && user ? (
+          <Link
+            href="/profile"
+            aria-label="Profile"
+            className="rounded-full flex items-center justify-center p-1 text-[#2d3758] transition-colors hover:bg-[#e9e8e2]"
+          >
+            <Avatar className="h-7 w-7 border border-[#d7d5cf] shadow-sm">
+              <AvatarImage src={googleAvatar || ""} alt={user.fullName || user.username} />
+              <AvatarFallback className="bg-[#cd5227] text-white text-[10px] font-semibold">
+                {(user.fullName || user.username || "?").charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
+        ) : (
+          <Link
+            href="/profile"
+            aria-label="Account"
+            className="rounded-full p-2 text-[#2d3758] transition-colors hover:bg-[#e9e8e2]"
+          >
+            <UserCircle2 className="h-5 w-5" />
+          </Link>
+        )}
       </div>
     </header>
   );
