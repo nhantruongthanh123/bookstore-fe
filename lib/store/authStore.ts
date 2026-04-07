@@ -1,54 +1,36 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { UserResponse } from '@/types';
-import { setTokens as saveTokens, clearTokens as removeTokens } from '@/lib/utils/token';
+import Cookies from 'js-cookie';
 
 interface AuthState {
   user: UserResponse | null;
-  accessToken: string | null;
-  refreshToken: string | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  
-  setAuth: (user: UserResponse, accessToken: string, refreshToken: string) => void;
+
+  setAuth: (user: UserResponse) => void;
   clearAuth: () => void;
-  updateTokens: (accessToken: string, refreshToken: string) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      accessToken: null,
-      refreshToken: null,
       isAuthenticated: false,
       isAdmin: false,
 
-      setAuth: (user, accessToken, refreshToken) => {
-        saveTokens(accessToken, refreshToken);
+      setAuth: (user) =>
         set({
-          user,
-          accessToken,
-          refreshToken,
+          user: user,
           isAuthenticated: true,
-          isAdmin: user.roles.includes('ROLE_ADMIN'),
-        });
-      },
+          isAdmin: user.roles.includes('ROLE_ADMIN')
+        }),
 
       clearAuth: () => {
-        removeTokens();
-        set({
-          user: null,
-          accessToken: null,
-          refreshToken: null,
-          isAuthenticated: false,
-          isAdmin: false,
-        });
-      },
+        set({ user: null, isAuthenticated: false, isAdmin: false });
 
-      updateTokens: (accessToken, refreshToken) => {
-        saveTokens(accessToken, refreshToken);
-        set({ accessToken, refreshToken });
+        Cookies.remove('accessToken');
+        Cookies.remove('refreshToken');
       },
     }),
     {

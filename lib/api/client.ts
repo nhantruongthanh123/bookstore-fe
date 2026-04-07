@@ -84,9 +84,9 @@ apiClient.interceptors.response.use(
         });
 
         const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data;
-        
+
         setTokens(newAccessToken, newRefreshToken);
-        
+
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         }

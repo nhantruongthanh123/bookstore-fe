@@ -18,7 +18,6 @@ export const authService = {
   },
 
   googleLogin: () => {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8080';
-    window.location.href = `${backendUrl}/oauth2/authorization/google`;
+    window.location.href = 'https://book-shop.duckdns.org/oauth2/authorization/google';
   },
 };

@@ -4,6 +4,7 @@ import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/authStore';
 import apiClient from '@/lib/api/client';
+import Cookies from 'js-cookie';
 
 function OAuth2RedirectHandler() {
   const router = useRouter();
@@ -24,15 +25,12 @@ function OAuth2RedirectHandler() {
 
       if (accessToken && refreshToken) {
         try {
-          // Temporarily set tokens so we can fetch the user profile
-          localStorage.setItem('accessToken', accessToken);
-          localStorage.setItem('refreshToken', refreshToken);
+          Cookies.set('accessToken', accessToken);
+          Cookies.set('refreshToken', refreshToken);
 
-          // Assuming there's a /users/me or /auth/me endpoint to get the user context!
-          // You might need to update this endpoint to match your actual backend API
-          const response = await apiClient.get('/auth/me'); 
-          
-          setAuth(response.data, accessToken, refreshToken);
+          const response = await apiClient.get('/auth/me');
+
+          setAuth(response.data);
           router.push('/');
         } catch (err) {
           console.error('Failed to fetch user profile after OAuth2 login:', err);

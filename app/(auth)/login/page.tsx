@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
+import Cookies from 'js-cookie';
 
 const loginSchema = z.object({
   usernameOrEmail: z.string().min(1, 'Username or email is required'),
@@ -36,9 +37,22 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     try {
       setError('');
+
       const response = await authService.login(data);
-      const { accessToken, refreshToken, ...userData } = response;
-      setAuth(userData, accessToken, refreshToken);
+
+      const {
+        accessToken,
+        refreshToken,
+        type,
+        expiresIn,
+        ...userProfile
+      } = response;
+
+      Cookies.set('accessToken', accessToken);
+      Cookies.set('refreshToken', refreshToken);
+
+      setAuth(userProfile);
+
       router.push('/');
     } catch (err: unknown) {
       const errorMessage =
