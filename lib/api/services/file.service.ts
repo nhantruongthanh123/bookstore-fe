@@ -5,11 +5,7 @@ export const fileService = {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await apiClient.post('/files/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await apiClient.post('/files/upload', formData);
 
     return response.data.url;
   },

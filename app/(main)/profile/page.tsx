@@ -59,7 +59,7 @@ export default function ProfilePage() {
                         {/* Avatar Section */}
                         <div className="relative shrink-0">
                             <Avatar className="w-32 h-32 md:w-40 md:h-40 border-4 border-[#F6F5F2] shadow-sm">
-                                <AvatarImage className="object-cover" src={googleAvatar || ""} alt={user.fullName || user.username} />
+                                <AvatarImage className="object-cover" src={user.avatar || googleAvatar || ""} alt={user.fullName || user.username} />
                                 <AvatarFallback className="bg-[#cd5227] text-white text-4xl font-serif">
                                     {(user.fullName || user.username || "?").charAt(0).toUpperCase()}
                                 </AvatarFallback>
@@ -84,9 +84,13 @@ export default function ProfilePage() {
                             </div>
 
                             <div className="flex items-center justify-center md:justify-start gap-3 pt-2">
-                                <button className="px-6 py-2.5 bg-[#0A192F] hover:bg-[#162A4B] text-white text-sm font-semibold rounded-lg transition-colors active:scale-95 shadow-sm">
+                                <Link
+                                    href="/profile/edit"
+                                    className="inline-flex items-center justify-center px-6 py-2.5 bg-[#0A192F] hover:bg-[#162A4B] text-white text-sm font-semibold rounded-lg transition-colors active:scale-95 shadow-sm"
+                                >
                                     Edit Profile
-                                </button>
+                                </Link>
+
                                 <button className="px-6 py-2.5 bg-transparent hover:bg-gray-50 text-gray-600 text-sm font-semibold rounded-lg transition-colors active:scale-95">
                                     Settings
                                 </button>
@@ -95,15 +99,15 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="mt-12 pt-8 border-t border-[#EAE8E3]">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 gap-y-10">
                             <div className="space-y-1.5 text-center md:text-left min-w-0 w-full">
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-[#EE6337]">Username</p>
                                 <p className="text-[#161B22] font-semibold text-[17px] truncate" title={`@${user.username}`}>@{user.username}</p>
                             </div>
                             <div className="space-y-1.5 text-center md:text-left min-w-0 w-full">
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-[#EE6337]">Phone Number</p>
-                                <p className="text-[#161B22] font-semibold text-[17px] truncate" title={user.phoneNumber || "+1 (555) 123-4567"}>
-                                    {user.phoneNumber || "+1 (555) 123-4567"}
+                                <p className="text-[#161B22] font-semibold text-[17px] truncate" title={user.phoneNumber || "Not updated"}>
+                                    {user.phoneNumber || "Not updated"}
                                 </p>
                             </div>
                             <div className="space-y-1.5 text-center md:text-left min-w-0 w-full">
@@ -115,6 +119,19 @@ export default function ProfilePage() {
                             <div className="space-y-1.5 text-center md:text-left min-w-0 w-full">
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-[#EE6337]">Joined Date</p>
                                 <p className="text-[#161B22] font-semibold text-[17px] truncate">{formatDate(user.createdAt)}</p>
+                            </div>
+
+                            <div className="space-y-1.5 text-center md:text-left min-w-0 w-full lg:col-span-2">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-[#EE6337]">Address</p>
+                                <p className="text-[#161B22] font-semibold text-[17px] truncate" title={user.address || "Not updated"}>{user.address || "Not updated"}</p>
+                            </div>
+                            <div className="space-y-1.5 text-center md:text-left min-w-0 w-full">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-[#EE6337]">Date of Birth</p>
+                                <p className="text-[#161B22] font-semibold text-[17px] truncate">{formatDate(user.dateOfBirth)}</p>
+                            </div>
+                            <div className="space-y-1.5 text-center md:text-left min-w-0 w-full">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-[#EE6337]">Gender</p>
+                                <p className="text-[#161B22] font-semibold text-[17px] truncate capitalize">{user.gender || "Not updated"}</p>
                             </div>
                         </div>
                     </div>

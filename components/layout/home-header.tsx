@@ -88,7 +88,7 @@ export function HomeHeader() {
           <DropdownMenu>
             <DropdownMenuTrigger className="rounded-full flex items-center justify-center p-1 text-[#2d3758] transition-colors hover:bg-[#e9e8e2] outline-none">
               <Avatar className="h-7 w-7 border border-[#d7d5cf] shadow-sm">
-                <AvatarImage src={googleAvatar || ""} alt={user.fullName || user.username} />
+                <AvatarImage src={user.avatar || googleAvatar || ""} alt={user.fullName || user.username} />
                 <AvatarFallback className="bg-[#cd5227] text-white text-[10px] font-semibold">
                   {(user.fullName || user.username || "?").charAt(0).toUpperCase()}
                 </AvatarFallback>

@@ -28,7 +28,7 @@ function OAuth2RedirectHandler() {
           Cookies.set('accessToken', accessToken);
           Cookies.set('refreshToken', refreshToken);
 
-          const response = await apiClient.get('/auth/me');
+          const response = await apiClient.get('/users/me');
 
           setAuth(response.data);
           router.push('/');

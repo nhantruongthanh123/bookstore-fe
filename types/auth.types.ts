@@ -34,6 +34,10 @@ export interface UserResponse {
   accountNonLocked: boolean;
   createdAt: string;
   updatedAt: string;
+  avatar?: string;
+  address?: string;
+  dateOfBirth?: string;
+  gender?: string;
 }
 
 export interface TokenRefreshRequest {

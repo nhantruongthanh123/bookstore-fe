@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AxiosError } from 'axios';
 import { authService } from '@/lib/api/services/auth.service';
+import apiClient from '@/lib/api/client';
 import { useAuthStore } from '@/lib/store/authStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,7 +17,7 @@ import Cookies from 'js-cookie';
 
 const loginSchema = z.object({
   usernameOrEmail: z.string().min(1, 'Username or email is required'),
-  password: z.string().min(8, 'Password must be at least  characters'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -40,18 +41,13 @@ export default function LoginPage() {
 
       const response = await authService.login(data);
 
-      const {
-        accessToken,
-        refreshToken,
-        type,
-        expiresIn,
-        ...userProfile
-      } = response;
+      const { accessToken, refreshToken } = response;
 
       Cookies.set('accessToken', accessToken);
       Cookies.set('refreshToken', refreshToken);
 
-      setAuth(userProfile);
+      const userRes = await apiClient.get('/users/me');
+      setAuth(userRes.data);
 
       router.push('/');
     } catch (err: unknown) {
@@ -66,7 +62,7 @@ export default function LoginPage() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#FCFBFA] relative overflow-hidden font-sans">
       {/* Dot pattern background */}
-      <div 
+      <div
         className="absolute inset-0 pointer-events-none opacity-[0.15]"
         style={{ backgroundImage: 'radial-gradient(#9ca3af 1px, transparent 1px)', backgroundSize: '16px 16px' }}
       ></div>
