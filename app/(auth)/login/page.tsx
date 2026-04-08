@@ -48,8 +48,13 @@ export default function LoginPage() {
 
       const userRes = await apiClient.get('/users/me');
       setAuth(userRes.data);
+      console.log(userRes.data);
 
-      router.push('/');
+      if (userRes.data.roles[0] == 'ROLE_ADMIN') {
+        router.push('/dashboard');
+      } else {
+        router.push('/');
+      }
     } catch (err: unknown) {
       const errorMessage =
         err instanceof AxiosError

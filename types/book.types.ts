@@ -10,6 +10,7 @@ export interface BookResponse {
   description: string | null;
   coverImage: string | null;
   quantity: number;
+  isDeleted: boolean;
   categories: CategoryResponse[];
 }
 

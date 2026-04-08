@@ -31,7 +31,12 @@ function OAuth2RedirectHandler() {
           const response = await apiClient.get('/users/me');
 
           setAuth(response.data);
-          router.push('/');
+
+          if (response.data.roles[0] == 'ROLE_ADMIN') {
+            router.push('/dashboard');
+          } else {
+            router.push('/');
+          }
         } catch (err) {
           console.error('Failed to fetch user profile after OAuth2 login:', err);
           router.push('/login?error=Failed to retrieve user profile');

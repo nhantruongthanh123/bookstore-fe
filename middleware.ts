@@ -12,7 +12,8 @@ export function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/orders') ||
     request.nextUrl.pathname.startsWith('/profile');
 
-  const isAdminPage = request.nextUrl.pathname.startsWith('/admin');
+  const isAdminPage = request.nextUrl.pathname.startsWith('/admin') || 
+    request.nextUrl.pathname.startsWith('/dashboard');
 
   // Redirect authenticated users away from auth pages
   if (isAuthPage && authCookie) {
@@ -35,5 +36,6 @@ export const config = {
     '/orders/:path*',
     '/profile/:path*',
     '/admin/:path*',
+    '/dashboard/:path*',
   ],
 };
