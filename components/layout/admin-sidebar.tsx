@@ -51,10 +51,10 @@ export function AdminSidebar() {
                 { name: 'Authors', href: '/shop/authors', icon: PencilLine },
             ]
         },
-        { name: 'Users', href: '/dashboard/users', icon: Users },
-        { name: 'Orders', href: '/dashboard/orders', icon: ShoppingBag },
-        { name: 'Marketing', href: '/dashboard/marketing', icon: Megaphone },
-        { name: 'System', href: '/dashboard/system', icon: Settings },
+        { name: 'Users', href: '/users', icon: Users },
+        { name: 'Orders', href: '/orders', icon: ShoppingBag },
+        { name: 'Marketing', href: '/marketing', icon: Megaphone },
+        { name: 'System', href: '/system', icon: Settings },
     ];
 
     const [isShopOpen, setIsShopOpen] = useState(false);
@@ -157,19 +157,7 @@ export function AdminSidebar() {
 
             {/* Bottom Actions Section */}
             <div className="p-6 space-y-4 pt-4 border-t border-transparent">
-                <button className="w-full flex items-center justify-center gap-2 bg-[#3A1811] hover:bg-[#260e0a] text-[#F3EFE9] px-4 py-3.5 rounded-xl transition-colors shadow-sm active:scale-95">
-                    <PackageSearch className="w-[18px] h-[18px]" />
-                    <span className="text-[13px] font-semibold tracking-wide">Quick Inventory</span>
-                </button>
-
                 <div className="space-y-1 px-1">
-                    <Link
-                        href="/dashboard/settings"
-                        className="flex items-center gap-3.5 px-3 py-2.5 rounded-lg transition-colors text-gray-500 hover:bg-[#EBE9E3] hover:text-[#161B22] font-medium"
-                    >
-                        <Settings className="w-[18px] h-[18px] text-gray-400" />
-                        <span className="text-[14px]">Settings</span>
-                    </Link>
                     <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-lg transition-colors text-gray-500 hover:bg-[#ffe5e5] hover:text-[#C52A1A] font-medium"
