@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { getAccessToken, getRefreshToken, setTokens, clearTokens } from '@/lib/utils/token';
+import { getAccessToken, getRefreshToken, setTokens } from '@/lib/utils/token';
+import { useAuthStore } from '@/lib/store/authStore';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
@@ -70,7 +71,8 @@ apiClient.interceptors.response.use(
       const refreshToken = getRefreshToken();
 
       if (!refreshToken) {
-        clearTokens();
+        // Both tokens missing — clear everything and redirect
+        useAuthStore.getState().clearAuth();
         window.location.href = '/login';
         return Promise.reject(error);
       }
@@ -92,8 +94,9 @@ apiClient.interceptors.response.use(
         processQueue(null, newAccessToken);
         return apiClient(originalRequest);
       } catch (refreshError) {
+        // Refresh token is also expired/invalid — nuke everything
         processQueue(refreshError, null);
-        clearTokens();
+        useAuthStore.getState().clearAuth();
         window.location.href = '/login';
         return Promise.reject(refreshError);
       } finally {

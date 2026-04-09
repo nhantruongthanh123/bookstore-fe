@@ -6,6 +6,7 @@ import { Search, ShoppingCart, UserCircle2, LogOut, User } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +22,10 @@ export function HomeHeader() {
   const { user, isAuthenticated, clearAuth } = useAuthStore();
   const [googleAvatar, setGoogleAvatar] = useState<string | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
+
+  const activeClass = "border-b-2 border-[#cd5227] pb-1 font-semibold text-[#cd5227]";
+  const inactiveClass = "border-b-2 border-transparent pb-1 transition-colors hover:text-[#2e3547]";
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -53,16 +58,24 @@ export function HomeHeader() {
         </p>
         <nav className="flex items-center gap-5 text-sm text-[#6d6f79]">
           <Link
-            href="/books"
-            className="border-b-2 border-[#cd5227] pb-1 font-semibold text-[#cd5227]"
+            href="/"
+            className={pathname === '/' ? activeClass : inactiveClass}
           >
-            Browse
+            Home
           </Link>
-          <Link href="/books" className="transition-colors hover:text-[#2e3547]">
-            Collections
+
+          <Link
+            href="/books"
+            className={pathname.startsWith('/books') ? activeClass : inactiveClass}
+          >
+            Books
           </Link>
-          <Link href="/orders" className="transition-colors hover:text-[#2e3547]">
-            Journal
+
+          <Link
+            href="/orders"
+            className={pathname.startsWith('/orders') ? activeClass : inactiveClass}
+          >
+            Orders
           </Link>
         </nav>
       </div>
@@ -106,7 +119,7 @@ export function HomeHeader() {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="cursor-pointer"
-                onClick={() => window.location.href = '/profile'}
+                onClick={() => router.push('/profile')}
               >
                 <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>

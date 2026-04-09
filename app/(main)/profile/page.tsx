@@ -10,7 +10,7 @@ import { HomeFooter } from '@/components/layout/home-footer';
 import { HomeHeader } from '@/components/layout/home-header';
 
 export default function ProfilePage() {
-    const { user } = useAuthStore();
+    const { user, isInitialized } = useAuthStore();
     const [googleAvatar, setGoogleAvatar] = useState<string | null>(null);
 
     useEffect(() => {
@@ -25,12 +25,19 @@ export default function ProfilePage() {
         }
     }, []);
 
-    if (!user) {
+    // Session check still in flight — wait for AuthProvider to finish
+    if (!isInitialized) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-[#FCFBFA]">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#cd5227]"></div>
             </div>
         );
+    }
+
+    // Initialized but no user → middleware will redirect to /login.
+    // Render null to avoid a flash of broken UI.
+    if (!user) {
+        return null;
     }
 
     const formatDate = (dateString: string | null | undefined) => {

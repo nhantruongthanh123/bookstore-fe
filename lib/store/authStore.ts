@@ -7,9 +7,11 @@ interface AuthState {
   user: UserResponse | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isInitialized: boolean;
 
   setAuth: (user: UserResponse) => void;
   clearAuth: () => void;
+  setInitialized: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -18,23 +20,33 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       isAdmin: false,
+      isInitialized: false,
 
       setAuth: (user) =>
         set({
-          user: user,
+          user,
           isAuthenticated: true,
-          isAdmin: user.roles.includes('ROLE_ADMIN')
+          isAdmin: user.roles.includes('ROLE_ADMIN'),
+          isInitialized: true,
         }),
 
       clearAuth: () => {
-        set({ user: null, isAuthenticated: false, isAdmin: false });
-
         Cookies.remove('accessToken');
         Cookies.remove('refreshToken');
+        set({ user: null, isAuthenticated: false, isAdmin: false, isInitialized: true });
       },
+
+      setInitialized: () => set({ isInitialized: true }),
     }),
     {
       name: 'auth-storage',
+      // isInitialized must NOT be persisted — it should always restart as false
+      // so AuthProvider re-runs the session check on every fresh page load.
+      partialize: (state) => ({
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+        isAdmin: state.isAdmin,
+      }),
     }
   )
 );

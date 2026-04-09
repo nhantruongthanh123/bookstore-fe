@@ -7,13 +7,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AxiosError } from 'axios';
 import { authService } from '@/lib/api/services/auth.service';
-import apiClient from '@/lib/api/client';
+import { userService } from '@/lib/api/services/user.service';
 import { useAuthStore } from '@/lib/store/authStore';
+import { setTokens } from '@/lib/utils/token';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
-import Cookies from 'js-cookie';
 
 const loginSchema = z.object({
   usernameOrEmail: z.string().min(1, 'Username or email is required'),
@@ -43,14 +43,13 @@ export default function LoginPage() {
 
       const { accessToken, refreshToken } = response;
 
-      Cookies.set('accessToken', accessToken);
-      Cookies.set('refreshToken', refreshToken);
+      // Store tokens first so the subsequent /users/me call is authenticated
+      setTokens(accessToken, refreshToken);
 
-      const userRes = await apiClient.get('/users/me');
-      setAuth(userRes.data);
-      console.log(userRes.data);
+      const profile = await userService.getProfile();
+      setAuth(profile);
 
-      if (userRes.data.roles[0] == 'ROLE_ADMIN') {
+      if (profile.roles[0] === 'ROLE_ADMIN') {
         router.push('/dashboard');
       } else {
         router.push('/');
