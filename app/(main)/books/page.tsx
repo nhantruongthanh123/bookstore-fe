@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { bookService } from '@/lib/api/services/book.service';
 import { BookResponse, PageResponse, SearchBookRequest, CategoryResponse } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,9 @@ import Image from 'next/image';
 import { HomeFooter } from '@/components/layout/home-footer';
 import { HomeHeader } from '@/components/layout/home-header';
 import { categoryService } from '@/lib/api/services/category.service';
-import { Search, X, ShoppingCart, SlidersHorizontal } from 'lucide-react';
+import { useCartStore } from '@/lib/store/cartStore';
+import { useAuthStore } from '@/lib/store/authStore';
+import { Search, X, ShoppingCart, SlidersHorizontal, Loader2, CheckCircle2 } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -20,6 +23,10 @@ import {
 } from "@/components/ui/select";
 
 export default function BooksPage() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
+  const { addToCart } = useCartStore();
+
   const [books, setBooks] = useState<BookResponse[]>([]);
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,6 +34,24 @@ export default function BooksPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+
+  // Per-book cart state: 'idle' | 'adding' | 'added'
+  const [cartState, setCartState] = useState<Record<number, 'adding' | 'added'>>({});
+
+  const handleAddToCart = async (book: BookResponse) => {
+    if (!isAuthenticated) { router.push('/login'); return; }
+    if (cartState[book.id]) return; // already in-flight
+    setCartState((prev) => ({ ...prev, [book.id]: 'adding' }));
+    try {
+      await addToCart({ bookId: book.id, quantity: 1 });
+      setCartState((prev) => ({ ...prev, [book.id]: 'added' }));
+      setTimeout(() => {
+        setCartState((prev) => { const next = { ...prev }; delete next[book.id]; return next; });
+      }, 2000);
+    } catch {
+      setCartState((prev) => { const next = { ...prev }; delete next[book.id]; return next; });
+    }
+  };
 
   // Search parameters (authoritative state for fetching)
   const [searchParams, setSearchParams] = useState<SearchBookRequest>({
@@ -340,26 +365,35 @@ export default function BooksPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {books.map((book) => (
               <div key={book.id} className="group relative">
-                <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-[#EAE8E3]/30 border border-[#EAE8E3]/50 transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-[#cd5227]/10 group-hover:-translate-y-1">
-                  <Image
-                    src={book.coverImage || '/placeholder-book.jpg'}
-                    alt={book.title}
-                    fill
-                    loading="eager"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-6">
-                    <Button
-                      variant="outline"
-                      className="w-full bg-white/95 hover:bg-white text-[#161B22] border-none shadow-lg gap-2 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300"
-                    >
-                      <ShoppingCart className="h-4 w-4" />
-                      Add to Cart
-                    </Button>
+                <Link href={`/books/${book.id}`}>
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-[#EAE8E3]/30 border border-[#EAE8E3]/50 transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-[#cd5227]/10 group-hover:-translate-y-1">
+                    <Image
+                      src={book.coverImage || '/placeholder-book.jpg'}
+                      alt={book.title}
+                      fill
+                      loading="eager"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    {/* Hover Overlay */}
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-6">
+                      <Button
+                        variant="outline"
+                        onClick={(e) => { e.preventDefault(); handleAddToCart(book); }}
+                        disabled={!!cartState[book.id]}
+                        className={`w-full border-none shadow-lg gap-2 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 ${cartState[book.id] === 'added'
+                          ? 'bg-[#2F7E4C] hover:bg-[#2F7E4C] text-white'
+                          : 'bg-white/95 hover:bg-white text-[#161B22]'
+                          }`}
+                      >
+                        {cartState[book.id] === 'adding' && <Loader2 className="h-4 w-4 animate-spin" />}
+                        {cartState[book.id] === 'added' && <CheckCircle2 className="h-4 w-4" />}
+                        {!cartState[book.id] && <ShoppingCart className="h-4 w-4" />}
+                        {cartState[book.id] === 'adding' ? 'Adding...' : cartState[book.id] === 'added' ? 'Added!' : 'Add to Cart'}
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                </Link>
                 <div className="mt-4 space-y-1">
                   <div className="flex justify-between items-start">
                     <Link href={`/books/${book.id}`} className="hover:text-[#F06A42] transition-colors">

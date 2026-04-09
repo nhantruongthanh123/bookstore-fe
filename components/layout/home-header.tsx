@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Search, ShoppingCart, UserCircle2, LogOut, User } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
+import { useCartStore } from "@/lib/store/cartStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,12 +20,20 @@ import Cookies from "js-cookie";
 
 export function HomeHeader() {
   const { user, isAuthenticated, clearAuth } = useAuthStore();
+  const { cart, fetchCart } = useCartStore();
   const [googleAvatar, setGoogleAvatar] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
 
   const activeClass = "border-b-2 border-[#cd5227] pb-1 font-semibold text-[#cd5227]";
   const inactiveClass = "border-b-2 border-transparent pb-1 transition-colors hover:text-[#2e3547]";
+
+  // Fetch cart when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCart();
+    }
+  }, [isAuthenticated, fetchCart]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -49,6 +57,8 @@ export function HomeHeader() {
     clearAuth();
     router.push('/login');
   };
+
+  const cartItemCount = cart?.items.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
 
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#d9d7d1] px-4 py-4 md:px-8">
@@ -89,12 +99,18 @@ export function HomeHeader() {
             className="h-9 w-full rounded-md border border-[#d7d5cf] bg-[#ecebe8] pl-9 pr-3 text-sm placeholder:text-[#9c9da3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6266f0]/50"
           />
         </div>
+        
         <Link
           href="/cart"
-          aria-label="Cart"
-          className="rounded-full p-2 text-[#2d3758] transition-colors hover:bg-[#e9e8e2]"
+          aria-label={`Cart — ${cartItemCount} items`}
+          className="relative rounded-full p-2 text-[#2d3758] transition-colors hover:bg-[#e9e8e2]"
         >
           <ShoppingCart className="h-5 w-5" />
+          {isAuthenticated && cartItemCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#EE6337] text-white text-[9px] font-bold leading-none shadow-sm ring-1 ring-white animate-in zoom-in-75 duration-200">
+              {cartItemCount > 99 ? '99+' : cartItemCount}
+            </span>
+          )}
         </Link>
 
         {isAuthenticated && user ? (
