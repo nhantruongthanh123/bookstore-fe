@@ -11,7 +11,7 @@ interface CartState {
   addToCart: (data: AddToCartRequest) => Promise<void>;
   updateQuantity: (itemId: number, quantity: number) => Promise<void>;
   removeItem: (itemId: number) => Promise<void>;
-  clearCart: () => void;
+  clearCart: () => Promise<void>;
 }
 
 const getErrorMessage = (error: unknown): string => {
@@ -67,7 +67,14 @@ export const useCartStore = create<CartState>((set) => ({
     }
   },
 
-  clearCart: () => {
-    set({ cart: null });
+  clearCart: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      await cartService.clearCart();
+      set({ cart: null, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error), isLoading: false });
+      throw error;
+    }
   },
 }));

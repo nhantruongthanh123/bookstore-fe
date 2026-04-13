@@ -40,21 +40,21 @@ export function AdminSidebar() {
     const { clearAuth } = useAuthStore();
 
     const navItems: NavItem[] = [
-        { name: 'Overview', href: '/dashboard', icon: LayoutGrid },
+        { name: 'Overview', href: '/admin/dashboard', icon: LayoutGrid },
         {
             name: 'Shop Management',
             icon: Store,
             isGroup: true,
             subItems: [
-                { name: 'Books', href: '/shop/books', icon: BookOpen },
-                { name: 'Categories', href: '/shop/categories', icon: Layers },
-                { name: 'Authors', href: '/shop/authors', icon: PencilLine },
+                { name: 'Books', href: '/admin/shop/books', icon: BookOpen },
+                { name: 'Categories', href: '/admin/shop/categories', icon: Layers },
+                { name: 'Authors', href: '/admin/shop/authors', icon: PencilLine },
             ]
         },
-        { name: 'Users', href: '/users', icon: Users },
-        { name: 'Orders', href: '/orders', icon: ShoppingBag },
-        { name: 'Marketing', href: '/marketing', icon: Megaphone },
-        { name: 'System', href: '/system', icon: Settings },
+        { name: 'Users', href: '/admin/users', icon: Users },
+        { name: 'Orders', href: '/admin/orders', icon: ShoppingBag },
+        { name: 'Marketing', href: '/admin/marketing', icon: Megaphone },
+        { name: 'System', href: '/admin/system', icon: Settings },
     ];
 
     const [isShopOpen, setIsShopOpen] = useState(false);
@@ -78,7 +78,7 @@ export function AdminSidebar() {
         <aside className="w-64 shrink-0 bg-[#F6F5F2] border-r border-[#EAE8E3]/60 flex flex-col h-full font-sans">
             {/* Logo Section */}
             <div className="h-24 flex flex-col justify-center px-8 border-b border-transparent">
-                <Link href="/dashboard" className="transition-opacity hover:opacity-90">
+                <Link href="/admin/dashboard" className="transition-opacity hover:opacity-90">
                     <h1 className="text-[26px] font-serif font-bold text-[#161B22] tracking-tight">Book shop</h1>
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 mt-1">Staff Terminal</p>
                 </Link>

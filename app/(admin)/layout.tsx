@@ -13,26 +13,20 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, isAdmin } = useAuthStore();
+  const { isAuthenticated, isAdmin, isInitialized } = useAuthStore();
   const router = useRouter();
-  const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // Small delay to allow store to rehydrate from persistence
-    const timer = setTimeout(() => {
+    if (isInitialized) {
       if (!isAuthenticated) {
         router.push("/login");
       } else if (!isAdmin) {
         router.push("/unauthorized");
-      } else {
-        setCheckingAuth(false);
       }
-    }, 100);
+    }
+  }, [isAuthenticated, isAdmin, isInitialized, router]);
 
-    return () => clearTimeout(timer);
-  }, [isAuthenticated, isAdmin, router]);
-
-  if (checkingAuth) {
+  if (!isInitialized || (isAuthenticated && isAdmin && !isInitialized)) { // Ensure we wait for hydration
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-[#FCFBFA]">
         <div className="space-y-4 text-center">
@@ -43,6 +37,11 @@ export default function AdminLayout({
         </div>
       </div>
     );
+  }
+
+  // Double check auth before rendering content — if they are not auth, we return null while redirection happens
+  if (!isAuthenticated || !isAdmin) {
+    return null;
   }
 
   return (

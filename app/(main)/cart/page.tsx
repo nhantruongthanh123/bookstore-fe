@@ -15,24 +15,35 @@ import {
     ShoppingBag,
     Tag,
     AlertCircle,
+    CheckCircle2,
+    ArrowRight
 } from 'lucide-react';
 import { useCartStore } from '@/lib/store/cartStore';
 import { useAuthStore } from '@/lib/store/authStore';
 import { Button } from '@/components/ui/button';
 import { HomeHeader } from '@/components/layout/home-header';
 import { HomeFooter } from '@/components/layout/home-footer';
+import { orderService } from '@/lib/api/services/order.service';
 
 export default function CartPage() {
     const router = useRouter();
-    const { isAuthenticated } = useAuthStore();
-    const { cart, fetchCart, updateQuantity, removeItem, isLoading } = useCartStore();
+    const { isAuthenticated, isInitialized, user } = useAuthStore();
+    const { cart, fetchCart, updateQuantity, removeItem, clearCart, isLoading } = useCartStore();
+    
     const [removingId, setRemovingId] = useState<number | null>(null);
     const [updatingId, setUpdatingId] = useState<number | null>(null);
+    
+    // Checkout states
+    const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+    const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+    const [orderId, setOrderId] = useState<number | null>(null);
 
     useEffect(() => {
-        if (!isAuthenticated) { router.push('/login'); return; }
-        fetchCart();
-    }, [isAuthenticated, fetchCart, router]);
+        if (!isAuthenticated && isInitialized) { router.push('/login'); return; }
+        if (isAuthenticated) {
+            fetchCart();
+        }
+    }, [isAuthenticated, isInitialized, fetchCart, router]);
 
     const handleUpdateQuantity = async (itemId: number, newQty: number) => {
         if (newQty < 1) return;
@@ -47,19 +58,112 @@ export default function CartPage() {
         finally { setRemovingId(null); }
     };
 
+    const handleCheckout = async () => {
+        if (!cart || cart.items.length === 0) return;
+        
+        setIsCheckoutLoading(true);
+        try {
+            // Map cart items to order items
+            const orderItems = cart.items.map(item => ({
+                bookId: item.bookId,
+                quantity: item.quantity
+            }));
+
+            // Create order with placeholder data if user info is missing
+            const orderRequest = {
+                shippingAddress: user?.address || 'Standard Delivery Address',
+                phoneNumber: user?.phoneNumber || '0000000000',
+                items: orderItems
+            };
+
+            const response = await orderService.createOrder(orderRequest);
+            
+            // On success
+            setOrderId(response.id);
+            setCheckoutSuccess(true);
+            await clearCart(); // Clear server-side and local state
+            
+        } catch (error) {
+            console.error('Checkout failed:', error);
+            alert('Failed to complete checkout. Please try again.');
+        } finally {
+            setIsCheckoutLoading(false);
+        }
+    };
+
     const formatCurrency = (n: number) =>
         n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 
     const totalItems = cart?.items.reduce((s, i) => s + i.quantity, 0) ?? 0;
 
+    // ── Checkout Success Screen ────────────────────────────────────────────
+    if (checkoutSuccess) {
+        return (
+            <div className="min-h-screen bg-[#FDFCFA] font-sans flex flex-col">
+                <HomeHeader />
+                <div className="flex-grow flex items-center justify-center py-12">
+                    <div className="max-w-md w-full mx-auto px-6 text-center space-y-8">
+                        <div className="relative">
+                            <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-2 relative z-10">
+                                <CheckCircle2 className="w-12 h-12 text-emerald-500" />
+                            </div>
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-emerald-400/10 rounded-full blur-2xl animate-pulse"></div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <h1 className="text-4xl font-serif font-bold text-[#161B22]">Order Placed!</h1>
+                            <p className="text-gray-500 font-medium">
+                                Thank you for your purchase. Your order <span className="text-[#161B22] font-bold">#{orderId}</span> has been successfully created and is now pending.
+                            </p>
+                        </div>
+
+                        <div className="bg-white rounded-3xl border border-[#EAE8E3]/60 p-6 shadow-sm flex items-center justify-between">
+                            <div className="text-left">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Order ID</p>
+                                <p className="text-[15px] font-bold text-[#161B22]">#{String(orderId).padStart(5, '0')}</p>
+                            </div>
+                            <Button 
+                                variant="ghost" 
+                                onClick={() => router.push(`/orders/${orderId}`)}
+                                className="text-[#EE6337] font-bold text-[13px] hover:bg-[#EE6337]/5"
+                            >
+                                View Order <ArrowRight className="w-4 h-4 ml-1" />
+                            </Button>
+                        </div>
+
+                        <div className="space-y-3 pt-4">
+                            <Button
+                                onClick={() => router.push('/books')}
+                                className="w-full bg-[#EE6337] hover:bg-[#cd5227] text-white h-14 rounded-2xl font-bold shadow-lg shadow-[#EE6337]/20 active:scale-95 transition-all text-[15px]"
+                            >
+                                Continue Shopping
+                            </Button>
+                            <button
+                                onClick={() => router.push('/')}
+                                className="text-[13px] font-bold text-gray-400 hover:text-[#161B22] transition-colors"
+                            >
+                                Back to Home
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <HomeFooter />
+            </div>
+        );
+    }
+
     // ── Loading ────────────────────────────────────────────────────────────
     if (isLoading && !cart) {
         return (
-            <div className="min-h-[60vh] flex items-center justify-center bg-[#FDFCFA]">
-                <div className="text-center space-y-3">
-                    <Loader2 className="w-10 h-10 animate-spin text-[#EE6337]/60 mx-auto" />
-                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Loading your cart...</p>
+            <div className="min-h-screen bg-[#FDFCFA] font-sans flex flex-col">
+                <HomeHeader />
+                <div className="flex-grow flex items-center justify-center">
+                    <div className="text-center space-y-3">
+                        <Loader2 className="w-10 h-10 animate-spin text-[#EE6337]/60 mx-auto" />
+                        <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Loading your cart...</p>
+                    </div>
                 </div>
+                <HomeFooter />
             </div>
         );
     }
@@ -67,32 +171,36 @@ export default function CartPage() {
     // ── Empty Cart ─────────────────────────────────────────────────────────
     if (!cart || cart.items.length === 0) {
         return (
-            <div className="min-h-screen bg-[#FDFCFA] font-sans flex items-center justify-center">
-                <div className="text-center space-y-6 max-w-sm px-4">
-                    <div className="w-24 h-24 bg-[#F4F2EC] rounded-full flex items-center justify-center mx-auto">
-                        <ShoppingCart className="w-12 h-12 text-gray-300" />
+            <div className="min-h-screen bg-[#FDFCFA] font-sans flex flex-col">
+                <HomeHeader />
+                <div className="flex-grow flex items-center justify-center">
+                    <div className="text-center space-y-6 max-w-sm px-4">
+                        <div className="w-24 h-24 bg-[#F4F2EC] rounded-full flex items-center justify-center mx-auto">
+                            <ShoppingCart className="w-12 h-12 text-gray-300" />
+                        </div>
+                        <div>
+                            <h1 className="text-3xl font-serif font-bold text-[#161B22]">Your cart is empty</h1>
+                            <p className="text-gray-400 font-medium mt-2">Add some books to get started.</p>
+                        </div>
+                        <Button
+                            onClick={() => router.push('/books')}
+                            className="bg-[#EE6337] hover:bg-[#cd5227] text-white px-8 rounded-2xl h-12 font-semibold shadow-lg active:scale-95"
+                        >
+                            <BookOpen className="w-4 h-4 mr-2" />
+                            Browse Books
+                        </Button>
                     </div>
-                    <div>
-                        <h1 className="text-3xl font-serif font-bold text-[#161B22]">Your cart is empty</h1>
-                        <p className="text-gray-400 font-medium mt-2">Add some books to get started.</p>
-                    </div>
-                    <Button
-                        onClick={() => router.push('/books')}
-                        className="bg-[#EE6337] hover:bg-[#cd5227] text-white px-8 rounded-2xl h-12 font-semibold shadow-lg active:scale-95"
-                    >
-                        <BookOpen className="w-4 h-4 mr-2" />
-                        Browse Books
-                    </Button>
                 </div>
+                <HomeFooter />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[#FDFCFA] font-sans">
+        <div className="min-h-screen bg-[#FDFCFA] font-sans flex flex-col">
             <HomeHeader />
 
-            <div className="max-w-6xl mx-auto px-4 md:px-8 py-8">
+            <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 flex-grow w-full">
 
                 {/* Header */}
                 <div className="mb-8 flex items-center gap-4">
@@ -256,11 +364,18 @@ export default function CartPage() {
 
                             <div className="px-6 pb-6 pt-2 space-y-3">
                                 <Button
-                                    onClick={() => router.push('/checkout')}
+                                    onClick={handleCheckout}
+                                    disabled={isCheckoutLoading}
                                     className="w-full h-12 bg-[#EE6337] hover:bg-[#cd5227] text-white rounded-2xl font-bold text-[15px] tracking-wide shadow-lg active:scale-95 transition-all"
                                 >
-                                    <ShoppingCart className="w-4 h-4 mr-2" />
-                                    Proceed to Checkout
+                                    {isCheckoutLoading ? (
+                                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</>
+                                    ) : (
+                                        <>
+                                            <ShoppingCart className="w-4 h-4 mr-2" />
+                                            Proceed to Checkout
+                                        </>
+                                    )}
                                 </Button>
                                 <button
                                     onClick={() => router.push('/books')}

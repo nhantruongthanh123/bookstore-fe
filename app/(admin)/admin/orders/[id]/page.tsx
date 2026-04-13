@@ -47,7 +47,7 @@ export default function AdminOrderDetailPage() {
         setIsLoading(true);
         setError(false);
         try {
-            const data = await orderService.getOrderById(orderId);
+            const data = await orderService.getOrderByIdAdmin(orderId);
             setOrder(data);
         } catch (err) {
             console.error('Failed to load order', err);
@@ -112,7 +112,7 @@ export default function AdminOrderDetailPage() {
                         <p className="text-xl font-serif font-bold text-[#161B22]">Order Not Found</p>
                         <p className="text-sm text-gray-400">This order may have been removed or is inaccessible.</p>
                         <Button
-                            onClick={() => router.push('/orders')}
+                            onClick={() => router.push('/admin/orders')}
                             className="bg-[#0A192F] hover:bg-[#162A4B] text-white rounded-xl px-6"
                         >
                             Back to Orders
@@ -137,7 +137,7 @@ export default function AdminOrderDetailPage() {
                     <span>Admin</span>
                     <ChevronRight className="w-3 h-3" />
                     <button
-                        onClick={() => router.push('/orders')}
+                        onClick={() => router.push('/admin/orders')}
                         className="hover:text-[#EE6337] transition-colors"
                     >
                         Orders
@@ -150,7 +150,7 @@ export default function AdminOrderDetailPage() {
                     <div className="flex items-start gap-4">
                         {/* Back button */}
                         <button
-                            onClick={() => router.push('/orders')}
+                            onClick={() => router.push('/admin/orders')}
                             className="mt-1 p-2.5 rounded-xl border border-[#EAE8E3] bg-white shadow-sm hover:bg-[#F4F2EC] hover:border-[#EE6337]/40 transition-all active:scale-95 group"
                         >
                             <ArrowLeft className="w-4 h-4 text-gray-500 group-hover:text-[#EE6337] transition-colors" />

@@ -50,7 +50,7 @@ export default function LoginPage() {
       setAuth(profile);
 
       if (profile.roles[0] === 'ROLE_ADMIN') {
-        router.push('/dashboard');
+        router.push('/admin/dashboard');
       } else {
         router.push('/');
       }

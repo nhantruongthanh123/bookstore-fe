@@ -13,9 +13,16 @@ import { userService } from '@/lib/api/services/user.service';
 import Cookies from 'js-cookie';
 
 export default function EditProfilePage() {
-    const { user, setAuth } = useAuthStore();
+    const { user, setAuth, isInitialized, isAuthenticated } = useAuthStore();
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        if (isInitialized && !isAuthenticated) {
+            router.push('/login');
+        }
+    }, [isInitialized, isAuthenticated, router]);
+
     const [formError, setFormError] = useState('');
     const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -73,12 +80,16 @@ export default function EditProfilePage() {
         }
     }, [user]);
 
-    if (!user) {
+    if (!isInitialized || (isAuthenticated && !user)) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-[#FCFBFA]">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#cd5227]"></div>
             </div>
         );
+    }
+
+    if (!isAuthenticated) {
+        return null; // Let useEffect handle redirect
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {

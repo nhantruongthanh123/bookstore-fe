@@ -1,25 +1,27 @@
 'use client';
 
 import { useAuthStore } from '@/lib/store/authStore';
-import { 
-    CalendarDays, 
-    Banknote, 
-    ShoppingBag, 
-    Users, 
-    AlertTriangle, 
-    TrendingUp, 
-    MoreVertical 
+import {
+    CalendarDays,
+    Banknote,
+    ShoppingBag,
+    Users,
+    AlertTriangle,
+    TrendingUp,
+    MoreVertical
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 export default function AdminDashboardPage() {
     const { user } = useAuthStore();
+    const router = useRouter();
     const adminName = user?.fullName?.split(' ')[0] || user?.username || "Admin";
 
     return (
         <div className="px-8 lg:px-12 max-w-[1600px] mx-auto space-y-8 font-sans">
-            
+
             {/* Header Area */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
                 <div className="space-y-1">
@@ -44,7 +46,7 @@ export default function AdminDashboardPage() {
 
             {/* Metrics Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-                
+
                 {/* Metric 1 */}
                 <div className="bg-white p-6 rounded-2xl shadow-[0_4px_24px_rgb(0,0,0,0.02)] border border-[#EAE8E3]/50 flex flex-col justify-between h-[180px]">
                     <div className="flex justify-between items-start">
@@ -103,7 +105,7 @@ export default function AdminDashboardPage() {
                     <div className="w-10 h-10 rounded-lg bg-[#C52A1A] flex items-center justify-center relative z-10">
                         <AlertTriangle className="w-5 h-5 text-white" />
                     </div>
-                    
+
                     <div className="space-y-0.5 relative z-10">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-[#C52A1A]">
                             Low Stock Alert
@@ -119,7 +121,7 @@ export default function AdminDashboardPage() {
 
             {/* Charts Row */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                
+
                 {/* Revenue Growth Chart */}
                 <div className="xl:col-span-2 bg-white rounded-2xl shadow-[0_4px_24px_rgb(0,0,0,0.02)] border border-[#EAE8E3]/50 p-6 sm:p-8 flex flex-col h-[420px]">
                     <div className="flex justify-between items-start mb-6">
@@ -131,13 +133,13 @@ export default function AdminDashboardPage() {
                             Last 30 Days ▾
                         </div>
                     </div>
-                    
+
                     {/* Placeholder Chart Graphic */}
                     <div className="flex-1 w-full bg-[#F6F5F2] rounded-xl relative overflow-hidden flex items-end">
                         <svg viewBox="0 0 100 40" preserveAspectRatio="none" className="w-full h-3/4 fill-current text-[#D1D5DB] opacity-80">
                             <path d="M0,40 L0,25 C10,25 15,28 25,26 C35,24 40,15 50,18 C60,21 65,10 75,12 C85,14 90,5 100,2 L100,40 Z" />
                         </svg>
-                        
+
                         {/* Fake X-axis */}
                         <div className="absolute bottom-4 left-0 w-full px-6 flex justify-between text-[10px] font-bold tracking-widest text-gray-500 z-10">
                             <span>01 OCT</span>
@@ -152,19 +154,19 @@ export default function AdminDashboardPage() {
                 {/* Genre Distribution */}
                 <div className="bg-[#F6F5F2] rounded-2xl border border-[#EAE8E3]/50 p-6 sm:p-8 flex flex-col h-[420px]">
                     <h3 className="text-2xl font-serif font-bold text-[#161B22] text-center mb-8">Genre Distribution</h3>
-                    
+
                     {/* Donut Chart Mockup */}
                     <div className="flex-1 flex flex-col items-center justify-center relative pb-8">
                         {/* Fake Donut SVG */}
                         <svg viewBox="0 0 100 100" className="w-48 h-48 drop-shadow-md">
                             {/* Blue Arc */}
-                            <circle cx="50" cy="50" r="40" fill="transparent" stroke="#162A4B" strokeWidth="16" strokeDasharray="251.2" strokeDashoffset="60" strokeLinecap="round" className="origin-center -rotate-90"/>
+                            <circle cx="50" cy="50" r="40" fill="transparent" stroke="#162A4B" strokeWidth="16" strokeDasharray="251.2" strokeDashoffset="60" strokeLinecap="round" className="origin-center -rotate-90" />
                             {/* Red Arc */}
-                            <circle cx="50" cy="50" r="40" fill="transparent" stroke="#5E180A" strokeWidth="16" strokeDasharray="251.2" strokeDashoffset="180" strokeLinecap="round" className="origin-center rotate-[45deg]"/>
+                            <circle cx="50" cy="50" r="40" fill="transparent" stroke="#5E180A" strokeWidth="16" strokeDasharray="251.2" strokeDashoffset="180" strokeLinecap="round" className="origin-center rotate-[45deg]" />
                             {/* White Arc */}
-                            <circle cx="50" cy="50" r="40" fill="transparent" stroke="#E2E8F0" strokeWidth="16" strokeDasharray="251.2" strokeDashoffset="210" strokeLinecap="round" className="origin-center rotate-[150deg]"/>
+                            <circle cx="50" cy="50" r="40" fill="transparent" stroke="#E2E8F0" strokeWidth="16" strokeDasharray="251.2" strokeDashoffset="210" strokeLinecap="round" className="origin-center rotate-[150deg]" />
                         </svg>
-                        
+
                         <div className="absolute inset-0 pb-8 flex flex-col items-center justify-center">
                             <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Total</span>
                             <span className="text-[17px] font-serif font-bold text-[#161B22]">Genres</span>
@@ -201,12 +203,17 @@ export default function AdminDashboardPage() {
 
             {/* Bottom Row */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 pb-8">
-                
+
                 {/* Recent Orders */}
                 <div className="xl:col-span-2">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-2xl font-serif font-bold text-[#161B22]">Recent Orders</h3>
-                        <span className="text-[12px] font-bold text-[#161B22] underline cursor-pointer hover:text-[#EE6337] transition-colors">View All Orders</span>
+                        <span
+                            onClick={() => router.push('/admin/orders')}
+                            className="text-[12px] font-bold text-[#161B22] underline cursor-pointer hover:text-[#EE6337] transition-colors"
+                        >
+                            View All Orders
+                        </span>
                     </div>
 
                     <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgb(0,0,0,0.02)] border border-[#EAE8E3]/50 overflow-hidden">
@@ -264,7 +271,7 @@ export default function AdminDashboardPage() {
                 {/* Top Sellers */}
                 <div>
                     <h3 className="text-2xl font-serif font-bold text-[#161B22] mb-4">Top Sellers</h3>
-                    
+
                     <div className="space-y-6 mb-6">
                         {/* Item 1 */}
                         <div className="flex gap-4">
@@ -308,7 +315,10 @@ export default function AdminDashboardPage() {
                         </div>
                     </div>
 
-                    <button className="w-full py-3.5 bg-[#EBE9E3] hover:bg-[#EAE8E3] text-[#161B22] text-[13px] font-semibold tracking-wide rounded-xl transition-colors shadow-sm active:scale-95">
+                    <button
+                        onClick={() => router.push('/admin/shop/books')}
+                        className="w-full py-3.5 bg-[#EBE9E3] hover:bg-[#EAE8E3] text-[#161B22] text-[13px] font-semibold tracking-wide rounded-xl transition-colors shadow-sm active:scale-95"
+                    >
                         View Full Catalog
                     </button>
                 </div>

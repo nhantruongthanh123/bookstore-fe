@@ -33,7 +33,7 @@ function OAuth2RedirectHandler() {
           setAuth(response.data);
 
           if (response.data.roles[0] == 'ROLE_ADMIN') {
-            router.push('/dashboard');
+            router.push('/admin/dashboard');
           } else {
             router.push('/');
           }

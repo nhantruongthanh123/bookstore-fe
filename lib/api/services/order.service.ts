@@ -28,6 +28,11 @@ export const orderService = {
     return response.data;
   },
 
+  getOrderByIdAdmin: async (id: number): Promise<OrderResponse> => {
+    const response = await apiClient.get(`/orders/admin/${id}`);
+    return response.data;
+  },
+
   updateOrderStatus: async (id: number, status: OrderStatus): Promise<OrderResponse> => {
     const response = await apiClient.patch(`/orders/admin/${id}/status`, null, {
       params: { status },

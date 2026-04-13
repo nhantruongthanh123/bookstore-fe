@@ -24,4 +24,8 @@ export const cartService = {
     const response = await apiClient.delete(`/cart/items/${itemId}`);
     return response.data;
   },
+
+  clearCart: async (): Promise<void> => {
+    await apiClient.delete('/cart/items');
+  },
 };

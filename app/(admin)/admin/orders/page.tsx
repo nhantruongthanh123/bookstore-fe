@@ -257,7 +257,7 @@ export default function AdminOrdersPage() {
                                     <TableRow
                                         key={order.id}
                                         className="group hover:bg-[#FAF9F6] border-b border-[#EAE8E3]/40 transition-colors cursor-pointer"
-                                        onClick={() => router.push(`/orders/${order.id}`)}
+                                        onClick={() => router.push(`/admin/orders/${order.id}`)}
                                     >
                                         {/* Order ID */}
                                         <TableCell className="px-6 py-4">
@@ -310,7 +310,7 @@ export default function AdminOrdersPage() {
                                                 size="sm"
                                                 variant="ghost"
                                                 className="h-8 px-3 text-[11px] font-bold text-gray-400 hover:text-[#EE6337] hover:bg-[#EE6337]/10 rounded-lg"
-                                                onClick={() => router.push(`/orders/${order.id}`)}
+                                                onClick={() => router.push(`/admin/orders/${order.id}`)}
                                             >
                                                 View →
                                             </Button>
