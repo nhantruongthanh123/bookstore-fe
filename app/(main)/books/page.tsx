@@ -401,7 +401,7 @@ export default function BooksPage() {
                     </Link>
                     <span className="font-bold text-[#F06A42] pl-3">${book.price}</span>
                   </div>
-                  <p className="text-sm text-gray-500">{book.author}</p>
+                  <p className="text-sm text-gray-500">{book.authors?.map(a => a.name).join(', ')}</p>
                   <div className="flex gap-1 pt-1">
                     {book.categories?.slice(0, 2).map(cat => (
                       <span key={cat.id} className="text-[10px] uppercase tracking-widest font-bold text-gray-400">

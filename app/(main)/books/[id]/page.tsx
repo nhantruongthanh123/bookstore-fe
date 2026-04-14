@@ -173,9 +173,7 @@ export default function BookDetailPage() {
                                 <h1 className="text-3xl md:text-4xl font-serif font-bold text-[#161B22] leading-tight">
                                     {book.title}
                                 </h1>
-                                <p className="text-[15px] text-gray-500 font-medium mt-2">
-                                    by <span className="text-[#161B22] font-semibold">{book.author}</span>
-                                </p>
+                                by <span className="text-[#161B22] font-semibold">{book.authors?.map(a => a.name).join(', ')}</span>
                             </div>
 
                             {/* Price */}

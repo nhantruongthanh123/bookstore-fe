@@ -16,7 +16,8 @@ import {
 import { bookService } from '@/lib/api/services/book.service';
 import { categoryService } from '@/lib/api/services/category.service';
 import { fileService } from '@/lib/api/services/file.service';
-import { BookResponse, BookRequest, CategoryResponse } from '@/types';
+import { authorService } from '@/lib/api/services/author.service';
+import { BookResponse, BookRequest, CategoryResponse, AuthorResponse } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from "@/components/ui/label";
@@ -28,6 +29,7 @@ import {
     DialogDescription,
     DialogTitle,
 } from "@/components/ui/dialog";
+import AsyncSelect from 'react-select/async';
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -35,7 +37,7 @@ import * as z from 'zod';
 
 const bookSchema = z.object({
     title: z.string().min(1, 'Title is required'),
-    author: z.string().min(1, 'Author is required'),
+    authorsIds: z.array(z.number()).min(1, 'Select at least one author'),
     publisher: z.string().optional().or(z.literal('')),
     price: z.number().min(0, 'Price must be positive'),
     isbn: z.string().optional().or(z.literal('')),
@@ -54,6 +56,7 @@ export default function BookDetailPage() {
 
     const [book, setBook] = useState<BookResponse | null>(null);
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
+    const [selectedAuthorOptions, setSelectedAuthorOptions] = useState<{label: string, value: number}[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -64,7 +67,7 @@ export default function BookDetailPage() {
         resolver: zodResolver(bookSchema),
         defaultValues: {
             title: '',
-            author: '',
+            authorsIds: [],
             publisher: '',
             price: 0,
             isbn: '',
@@ -76,6 +79,7 @@ export default function BookDetailPage() {
     });
 
     const selectedCategoryIds = watch('categoryIds') || [];
+    const selectedAuthorsIds = watch('authorsIds') || [];
     const coverImage = watch('coverImage');
 
     const fetchData = useCallback(async () => {
@@ -89,16 +93,21 @@ export default function BookDetailPage() {
             setBook(bookData);
             setCategories(categoriesData);
 
+            setSelectedAuthorOptions(bookData.authors.map((a: AuthorResponse) => ({
+                label: a.name,
+                value: a.id
+            })));
+
             reset({
                 title: bookData.title,
-                author: bookData.author,
+                authorsIds: bookData.authors.map((a: AuthorResponse) => a.id),
                 publisher: bookData.publisher || '',
                 price: bookData.price,
                 isbn: bookData.isbn || '',
                 description: bookData.description || '',
                 coverImage: bookData.coverImage || '',
                 quantity: bookData.quantity,
-                categoryIds: bookData.categories.map(c => c.id),
+                categoryIds: bookData.categories.map((c: CategoryResponse) => c.id),
             });
         } catch (error) {
             console.error('Failed to fetch book details', error);
@@ -133,6 +142,19 @@ export default function BookDetailPage() {
             router.push('/admin/shop/books'); // Back to list
         } catch (error) {
             console.error('Failed to delete book', error);
+        }
+    };
+
+    const loadAuthors = async (inputValue: string) => {
+        try {
+            const data = await authorService.getAuthors(0, 20, 'name', inputValue);
+            return data.content.map(author => ({
+                label: author.name,
+                value: author.id
+            }));
+        } catch (error) {
+            console.error('Failed to search authors', error);
+            return [];
         }
     };
 
@@ -302,14 +324,61 @@ export default function BookDetailPage() {
                                 {errors.title && <p className="text-[10px] text-red-500 font-bold">{errors.title.message}</p>}
                             </div>
 
-                            {/* Author */}
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-[#EE6337]">Author</Label>
-                                <Input
-                                    {...register('author')}
-                                    className="h-12 bg-[#F6F5F2] border-[#EAE8E3] focus:bg-white focus:border-[#EE6337] rounded-xl transition-all shadow-none"
+                            {/* Authors Selection */}
+                            <div className="space-y-4 md:col-span-2 pt-4">
+                                <div>
+                                    <h3 className="text-lg font-serif font-bold text-[#161B22] mb-1">Authors Classification</h3>
+                                    <p className="text-[13px] text-gray-400 font-medium">Select all relevant authors for this book. Type to search.</p>
+                                </div>
+
+                                <AsyncSelect
+                                    isMulti
+                                    cacheOptions
+                                    defaultOptions
+                                    loadOptions={loadAuthors}
+                                    value={selectedAuthorOptions}
+                                    onChange={(selected) => {
+                                        const ops = selected as {label: string, value: number}[];
+                                        setSelectedAuthorOptions(ops);
+                                        setValue('authorsIds', ops.map(op => op.value), { shouldDirty: true, shouldValidate: true });
+                                    }}
+                                    placeholder="Search and select authors..."
+                                    className="react-select-container shadow-sm rounded-xl font-sans"
+                                    classNamePrefix="react-select"
+                                    styles={{
+                                        control: (base, state) => ({
+                                            ...base,
+                                            minHeight: '48px',
+                                            borderRadius: '12px',
+                                            borderColor: state.isFocused ? '#EE6337' : '#EAE8E3',
+                                            backgroundColor: state.isFocused ? '#ffffff' : '#F6F5F2',
+                                            boxShadow: 'none',
+                                            '&:hover': {
+                                                borderColor: '#EE6337'
+                                            }
+                                        }),
+                                        multiValue: (base) => ({
+                                            ...base,
+                                            backgroundColor: '#EE6337',
+                                            borderRadius: '6px',
+                                        }),
+                                        multiValueLabel: (base) => ({
+                                            ...base,
+                                            color: 'white',
+                                            fontWeight: 'bold',
+                                        }),
+                                        multiValueRemove: (base) => ({
+                                            ...base,
+                                            color: 'white',
+                                            ':hover': {
+                                                backgroundColor: '#C52A1A',
+                                                color: 'white',
+                                                borderRadius: '0 6px 6px 0',
+                                            },
+                                        }),
+                                    }}
                                 />
-                                {errors.author && <p className="text-[10px] text-red-500 font-bold">{errors.author.message}</p>}
+                                {errors.authorsIds && <p className="text-[10px] text-red-500 font-bold mt-2">{errors.authorsIds.message}</p>}
                             </div>
 
                             {/* Publisher */}

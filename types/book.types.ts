@@ -1,9 +1,10 @@
 import { CategoryResponse } from './category.types';
+import { AuthorResponse } from './author.types';
 
 export interface BookResponse {
   id: number;
   title: string;
-  author: string;
+  authors: AuthorResponse[];
   publisher: string | null;
   price: number;
   isbn: string | null;
@@ -16,7 +17,7 @@ export interface BookResponse {
 
 export interface BookRequest {
   title: string;
-  author: string;
+  authorsIds: number[];
   publisher?: string;
   price: number;
   isbn?: string;

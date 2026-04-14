@@ -27,4 +27,9 @@ export const userService = {
     const response = await apiClient.patch('/users/me', payload);
     return response.data;
   },
+
+  getAllUsers: async (): Promise<UserResponse[]> => {
+    const response = await apiClient.get('/users/admin');
+    return response.data;
+  },
 };

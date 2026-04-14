@@ -19,7 +19,8 @@ import {
 import { bookService } from '@/lib/api/services/book.service';
 import { categoryService } from '@/lib/api/services/category.service';
 import { fileService } from '@/lib/api/services/file.service';
-import { BookResponse, BookRequest, SearchBookRequest, CategoryResponse } from '@/types';
+import { authorService } from '@/lib/api/services/author.service';
+import { BookResponse, BookRequest, SearchBookRequest, CategoryResponse, AuthorResponse } from '@/types';
 import {
     Table,
     TableBody,
@@ -49,7 +50,7 @@ import * as z from 'zod';
 
 const bookSchema = z.object({
     title: z.string().min(1, 'Title is required'),
-    author: z.string().min(1, 'Author is required'),
+    authorsIds: z.array(z.number()).min(1, 'Select at least one author'),
     publisher: z.string().optional().or(z.literal('')),
     price: z.number().min(0, 'Price must be positive'),
     isbn: z.string().optional().or(z.literal('')),
@@ -66,6 +67,7 @@ export default function AdminBooksPage() {
     // State
     const [books, setBooks] = useState<BookResponse[]>([]);
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
+    const [authors, setAuthors] = useState<AuthorResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -88,7 +90,7 @@ export default function AdminBooksPage() {
         resolver: zodResolver(bookSchema),
         defaultValues: {
             title: '',
-            author: '',
+            authorsIds: [],
             publisher: '',
             price: 0,
             isbn: '',
@@ -100,6 +102,7 @@ export default function AdminBooksPage() {
     });
 
     const selectedCategoryIds = watch('categoryIds');
+    const selectedAuthorsIds = watch('authorsIds');
     const coverImage = watch('coverImage');
 
     // Load Data
@@ -130,9 +133,19 @@ export default function AdminBooksPage() {
         }
     };
 
+    const fetchAuthors = async () => {
+        try {
+            const data = await authorService.getAuthors(0, 100);
+            setAuthors(data.content);
+        } catch (error) {
+            console.error('Failed to fetch authors', error);
+        }
+    };
+
     useEffect(() => {
         fetchBooks();
         fetchCategories();
+        fetchAuthors();
     }, [fetchBooks]);
 
     // Handlers
@@ -141,20 +154,20 @@ export default function AdminBooksPage() {
             setEditingBook(book);
             reset({
                 title: book.title,
-                author: book.author,
+                authorsIds: book.authors.map((a: AuthorResponse) => a.id),
                 publisher: book.publisher || '',
                 price: book.price,
                 isbn: book.isbn || '',
                 description: book.description || '',
                 coverImage: book.coverImage || '',
                 quantity: book.quantity,
-                categoryIds: book.categories.map(c => c.id),
+                categoryIds: book.categories.map((c: CategoryResponse) => c.id),
             });
         } else {
             setEditingBook(null);
             reset({
                 title: '',
-                author: '',
+                authorsIds: [],
                 publisher: '',
                 price: 0,
                 isbn: '',
@@ -318,8 +331,8 @@ export default function AdminBooksPage() {
                                 </TableRow>
                             ) : (
                                 books.map((book) => (
-                                    <TableRow 
-                                        key={book.id} 
+                                    <TableRow
+                                        key={book.id}
                                         className={`group hover:bg-[#FAF9F6] border-b border-[#EAE8E3]/40 transition-colors cursor-pointer ${book.isDeleted ? 'opacity-50' : ''}`}
                                         onClick={() => router.push(`/admin/shop/books/${book.id}`)}
                                     >
@@ -348,7 +361,7 @@ export default function AdminBooksPage() {
                                                 <h4 className="text-[16px] font-serif font-bold text-[#161B22] leading-tight group-hover:text-[#EE6337] transition-colors line-clamp-1">
                                                     {book.title}
                                                 </h4>
-                                                <p className="text-[13px] text-gray-500 italic font-serif">by {book.author}</p>
+                                                <p className="text-[13px] text-gray-500 italic font-serif">by {book.authors?.map((a: AuthorResponse) => a.name).join(', ')}</p>
                                                 <p className="text-[10px] text-gray-400 font-medium">ISBN: {book.isbn || 'N/A'}</p>
                                             </div>
                                         </TableCell>
@@ -492,15 +505,31 @@ export default function AdminBooksPage() {
                                 {errors.title && <p className="text-[10px] text-red-500 font-bold">{errors.title.message}</p>}
                             </div>
 
-                            {/* Author */}
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-[#EE6337]">Author</Label>
-                                <Input
-                                    {...register('author')}
-                                    placeholder="e.g. F. Scott Fitzgerald"
-                                    className="h-11 bg-[#F6F5F2] border-transparent focus:bg-white focus:border-[#EE6337]/50 rounded-xl transition-all"
-                                />
-                                {errors.author && <p className="text-[10px] text-red-500 font-bold">{errors.author.message}</p>}
+                            {/* Authors */}
+                            <div className="space-y-3">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-[#EE6337]">Authors</Label>
+                                <div className="grid grid-cols-2 gap-2 p-3 bg-[#F6F5F2] rounded-xl border border-[#EAE8E3]/50 max-h-[140px] overflow-y-auto">
+                                    {authors.map((authorItem) => (
+                                        <div key={authorItem.id} className="flex items-center space-x-2 group cursor-pointer"
+                                            onClick={() => {
+                                                const current = selectedAuthorsIds || [];
+                                                const updated = current.includes(authorItem.id)
+                                                    ? current.filter(id => id !== authorItem.id)
+                                                    : [...current, authorItem.id];
+                                                setValue('authorsIds', updated);
+                                            }}
+                                        >
+                                            <div className={`w-4 h-4 rounded border transition-all flex items-center justify-center ${selectedAuthorsIds?.includes(authorItem.id)
+                                                ? 'bg-[#161B22] border-[#161B22]'
+                                                : 'border-gray-300 group-hover:border-[#EE6337]'
+                                                }`}>
+                                                {selectedAuthorsIds?.includes(authorItem.id) && <Check className="w-3 h-3 text-white" />}
+                                            </div>
+                                            <span className="text-[12px] font-medium text-gray-600 group-hover:text-[#161B22] transition-colors truncate">{authorItem.name}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                {errors.authorsIds && <p className="text-[10px] text-red-500 font-bold">{errors.authorsIds.message}</p>}
                             </div>
 
                             {/* Price */}
