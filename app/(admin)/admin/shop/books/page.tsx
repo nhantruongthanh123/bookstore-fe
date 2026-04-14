@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import {
     Plus,
     Search,
@@ -61,6 +62,7 @@ const bookSchema = z.object({
 type BookFormData = z.infer<typeof bookSchema>;
 
 export default function AdminBooksPage() {
+    const router = useRouter();
     // State
     const [books, setBooks] = useState<BookResponse[]>([]);
     const [categories, setCategories] = useState<CategoryResponse[]>([]);
@@ -316,7 +318,11 @@ export default function AdminBooksPage() {
                                 </TableRow>
                             ) : (
                                 books.map((book) => (
-                                    <TableRow key={book.id} className={`group hover:bg-[#FAF9F6] border-b border-[#EAE8E3]/40 transition-colors ${book.isDeleted ? 'opacity-50' : ''}`}>
+                                    <TableRow 
+                                        key={book.id} 
+                                        className={`group hover:bg-[#FAF9F6] border-b border-[#EAE8E3]/40 transition-colors cursor-pointer ${book.isDeleted ? 'opacity-50' : ''}`}
+                                        onClick={() => router.push(`/admin/shop/books/${book.id}`)}
+                                    >
                                         <TableCell className="px-6 py-5">
                                             <div className="w-12 h-[72px] bg-[#F6F5F2] rounded-md border border-[#EAE8E3]/50 overflow-hidden relative group-hover:shadow-md transition-shadow">
                                                 {book.coverImage ? (
@@ -372,7 +378,10 @@ export default function AdminBooksPage() {
                                                     variant="ghost"
                                                     size="icon"
                                                     className="w-9 h-9 text-gray-400 hover:text-[#EE6337] hover:bg-[#EE6337]/10 rounded-lg transition-all"
-                                                    onClick={() => handleOpenDialog(book)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        router.push(`/admin/shop/books/${book.id}`);
+                                                    }}
                                                     disabled={book.isDeleted}
                                                 >
                                                     <Pencil className="w-4 h-4" />
@@ -381,7 +390,10 @@ export default function AdminBooksPage() {
                                                     variant="ghost"
                                                     size="icon"
                                                     className={`w-9 h-9 ${book.isDeleted ? 'text-gray-300 rotate-45' : 'text-gray-400 hover:text-[#C52A1A] hover:bg-[#C52A1A]/10'} rounded-lg transition-all`}
-                                                    onClick={() => handleDeleteClick(book)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteClick(book);
+                                                    }}
                                                     disabled={book.isDeleted}
                                                 >
                                                     <Trash2 className="w-4 h-4" />
