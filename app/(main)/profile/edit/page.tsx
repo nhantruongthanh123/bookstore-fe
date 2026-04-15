@@ -88,7 +88,7 @@ export default function EditProfilePage() {
         );
     }
 
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user) {
         return null; // Let useEffect handle redirect
     }
 
