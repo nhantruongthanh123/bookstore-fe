@@ -2,8 +2,10 @@ import apiClient from '../client';
 import { BookResponse, BookRequest, SearchBookRequest, PageResponse } from '@/types';
 
 export const bookService = {
-  getAllBooks: async (page = 0, size = 5): Promise<PageResponse<BookResponse>> => {
-    const response = await apiClient.get('/books', { params: { page, size } });
+  getAllBooks: async (page = 0, size = 5, sort?: string): Promise<PageResponse<BookResponse>> => {
+    const params: Record<string, any> = { page, size };
+    if (sort) params.sort = sort;
+    const response = await apiClient.get('/books', { params });
     return response.data;
   },
 

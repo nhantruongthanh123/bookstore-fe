@@ -191,8 +191,7 @@ export default function BooksPage() {
 
             <div className="h-6 w-[1px] bg-gray-200" />
 
-            {/* Category Select cho Desktop */}
-            <div className="w-[180px]">
+            <div className="w-[220px]">
               <Select
                 value={searchParams.category || "All categories"}
                 onValueChange={(value: string | null) => {
@@ -201,16 +200,31 @@ export default function BooksPage() {
                   setPage(0);
                 }}
               >
-                <SelectTrigger className="h-10 border-none bg-transparent shadow-none focus:ring-0 text-sm text-[#161B22]">
+                <SelectTrigger className="w-full h-10 border-none bg-transparent shadow-none focus:ring-0 text-sm font-medium text-[#161B22] hover:bg-[#F6F5F2] rounded-lg transition-colors px-3">
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
+                <SelectContent alignItemWithTrigger={false} side="bottom" sideOffset={4} className="w-[220px] bg-white border-[#EAE8E3] shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-xl p-1 z-50">
+                  <SelectItem
+                    value="all"
+                    className="group cursor-pointer rounded-lg py-2.5 px-3 focus:bg-[#161B22] data-[highlighted]:bg-[#161B22] hover:bg-[#161B22]"
+                  >
+                    <span className="text-[13px] font-medium uppercase tracking-wide text-[#161B22] group-focus:text-white group-data-[highlighted]:text-white group-hover:text-white">
+                      All Categories
+                    </span>
+                  </SelectItem>
+
                   {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.name}>
-                      {cat.name}
+                    <SelectItem
+                      key={cat.id}
+                      value={cat.name}
+                      className="group cursor-pointer rounded-lg py-2.5 px-3 focus:bg-[#161B22] data-[highlighted]:bg-[#161B22] hover:bg-[#161B22]"
+                    >
+                      <span className="text-sm font-medium text-[#161B22] group-focus:text-white group-data-[highlighted]:text-white group-hover:text-white">
+                        {cat.name}
+                      </span>
                     </SelectItem>
                   ))}
+
                 </SelectContent>
               </Select>
             </div>
@@ -300,14 +314,20 @@ export default function BooksPage() {
                       setPage(0);
                     }}
                   >
-                    <SelectTrigger className="w-full h-12 bg-[#F9F8F6] border-[#EAE8E3] text-[#161B22]">
+                    <SelectTrigger className="w-full h-12 bg-[#F9F8F6] border-[#EAE8E3] text-[#161B22] font-medium rounded-xl">
                       <SelectValue placeholder="Select category..." />
                     </SelectTrigger>
-                    <SelectContent className="max-h-[250px]">
-                      <SelectItem value="all">All Categories</SelectItem>
+                    <SelectContent alignItemWithTrigger={false} side="bottom" sideOffset={4} className="max-h-[250px] w-full bg-white border-[#EAE8E3] shadow-lg rounded-xl p-1 z-50">
+                      <SelectItem value="all" className="group cursor-pointer rounded-lg focus:bg-[#161B22] data-[highlighted]:bg-[#161B22] hover:bg-[#161B22] py-3 px-4">
+                        <span className="text-[13px] font-medium uppercase tracking-wide text-[#161B22] group-focus:text-white group-data-[highlighted]:text-white group-hover:text-white">
+                          All Categories
+                        </span>
+                      </SelectItem>
                       {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.name}>
-                          {cat.name}
+                        <SelectItem key={cat.id} value={cat.name} className="group cursor-pointer rounded-lg focus:bg-[#161B22] data-[highlighted]:bg-[#161B22] hover:bg-[#161B22] py-3 px-4">
+                          <span className="text-sm font-medium text-[#161B22] group-focus:text-white group-data-[highlighted]:text-white group-hover:text-white">
+                            {cat.name}
+                          </span>
                         </SelectItem>
                       ))}
                     </SelectContent>
