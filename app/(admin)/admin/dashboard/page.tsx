@@ -468,7 +468,7 @@ export default function AdminDashboardPage() {
                                     <div className="flex flex-col justify-center space-y-1 overflow-hidden">
                                         {idx === 0 && <span className="text-[9px] font-bold uppercase tracking-widest text-[#EE6337]">#1 Trending</span>}
                                         <h4 className="text-[15px] font-serif font-bold text-[#161B22] leading-tight truncate" title={book.title}>{book.title}</h4>
-                                        <p className="text-[12px] italic text-gray-500 font-serif truncate">by {book.author}</p>
+                                        <p className="text-[12px] italic text-gray-500 font-serif truncate">by {book.authors.map(author => author.name).join(', ')}</p>
                                         <p className="text-[12px] font-semibold text-[#2F7E4C] pt-0.5">{data.numberOfBooksInWeek[idx]} sold this week</p>
                                     </div>
                                 </div>
