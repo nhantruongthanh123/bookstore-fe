@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { bookService } from '@/lib/api/services/book.service';
 import { BookResponse, PageResponse, SearchBookRequest, CategoryResponse } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import { HomeHeader } from '@/components/layout/home-header';
 import { categoryService } from '@/lib/api/services/category.service';
 import { useCartStore } from '@/lib/store/cartStore';
 import { useAuthStore } from '@/lib/store/authStore';
-import { Search, X, ShoppingCart, SlidersHorizontal, Loader2, CheckCircle2 } from 'lucide-react';
+import { Search, X, ShoppingCart, SlidersHorizontal, Loader2, CheckCircle2, User } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -24,6 +24,7 @@ import {
 
 export default function BooksPage() {
   const router = useRouter();
+  const queryParams = useSearchParams();
   const { isAuthenticated } = useAuthStore();
   const { addToCart } = useCartStore();
 
@@ -64,6 +65,7 @@ export default function BooksPage() {
 
   // UI local state for inputs to allow typing before searching
   const [searchInput, setSearchInput] = useState('');
+  const [authorInput, setAuthorInput] = useState('');
   const [minPriceInput, setMinPriceInput] = useState<string>('');
   const [maxPriceInput, setMaxPriceInput] = useState<string>('');
 
@@ -80,12 +82,27 @@ export default function BooksPage() {
     fetchCategories();
   }, []);
 
+  // Initialize filters from URL query parameters
+  useEffect(() => {
+    const authorParam = queryParams.get('author');
+    const categoryParam = queryParams.get('category');
+
+    if (authorParam) {
+      setAuthorInput(authorParam);
+      setSearchParams(prev => ({ ...prev, author: authorParam }));
+    }
+    if (categoryParam) {
+      setSearchParams(prev => ({ ...prev, category: categoryParam }));
+    }
+  }, [queryParams]);
+
   // Debounce effect for text search and prices
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearchParams((prev: SearchBookRequest) => ({
         ...prev,
         title: searchInput,
+        author: authorInput,
         minPrice: minPriceInput ? Number(minPriceInput) : undefined,
         maxPrice: maxPriceInput ? Number(maxPriceInput) : undefined,
       }));
@@ -93,7 +110,7 @@ export default function BooksPage() {
     }, 1000); // 1s debounce
 
     return () => clearTimeout(timer);
-  }, [searchInput, minPriceInput, maxPriceInput]);
+  }, [searchInput, authorInput, minPriceInput, maxPriceInput]);
 
   // Fetch books — cancelled flag prevents stale updates after unmount (e.g. browser back)
   useEffect(() => {
@@ -134,6 +151,7 @@ export default function BooksPage() {
       setSearchParams((prev: SearchBookRequest) => ({
         ...prev,
         title: searchInput,
+        author: authorInput,
         category: prev.category,
         minPrice: minPriceInput ? Number(minPriceInput) : undefined,
         maxPrice: maxPriceInput ? Number(maxPriceInput) : undefined,
@@ -144,6 +162,7 @@ export default function BooksPage() {
 
   const resetFilters = () => {
     setSearchInput('');
+    setAuthorInput('');
     setMinPriceInput('');
     setMaxPriceInput('');
     setSearchParams({
@@ -184,6 +203,19 @@ export default function BooksPage() {
                 placeholder="Search by title..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="pl-9 h-10 border-none bg-transparent focus-visible:ring-0 placeholder:text-gray-400 text-sm"
+              />
+            </div>
+
+            <div className="h-6 w-[1px] bg-gray-200" />
+
+            <div className="relative w-64">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search by author..."
+                value={authorInput}
+                onChange={(e) => setAuthorInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 className="pl-9 h-10 border-none bg-transparent focus-visible:ring-0 placeholder:text-gray-400 text-sm"
               />
@@ -301,6 +333,19 @@ export default function BooksPage() {
               </div>
 
               <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Author</label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search by author..."
+                      value={authorInput}
+                      onChange={(e) => setAuthorInput(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      className="pl-9 h-12 bg-[#F9F8F6] border-[#EAE8E3] rounded-xl"
+                    />
+                  </div>
+                </div>
 
                 {/* Category Select cho Mobile */}
                 <div className="space-y-2">

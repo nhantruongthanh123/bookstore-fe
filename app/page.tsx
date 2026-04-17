@@ -206,7 +206,7 @@ export default function Home() {
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 max-w-4xl mx-auto">
                   {authors.map((author) => (
-                    <Link key={author.id} href={`/books?search=${encodeURIComponent(author.name)}`} className="group flex flex-col items-center">
+                    <Link key={author.id} href={`/books?author=${encodeURIComponent(author.name)}`} className="group flex flex-col items-center">
                       <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-white shadow-sm border-[6px] border-white group-hover:border-[#EE6337]/20 flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] group-hover:-translate-y-2 relative">
                         <span className="text-5xl font-serif font-bold text-gray-200 group-hover:text-[#EE6337]/40 transition-colors absolute">
                           {author.name.charAt(0)}
@@ -233,24 +233,26 @@ export default function Home() {
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                   {categories.map((category, index) => (
-                    <div key={category.id} className="group relative h-48 md:h-56 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all hover:-translate-y-1.5 cursor-pointer">
-                      <div className={`absolute inset-0 opacity-80 group-hover:opacity-100 transition-opacity duration-500 ${bgColors[index % bgColors.length]}`} />
-                      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors duration-500" />
+                    <Link key={category.id} href={`/books?category=${encodeURIComponent(category.name)}`}>
+                      <div className="group relative h-48 md:h-56 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all hover:-translate-y-1.5 cursor-pointer">
+                        <div className={`absolute inset-0 opacity-80 group-hover:opacity-100 transition-opacity duration-500 ${bgColors[index % bgColors.length]}`} />
+                        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors duration-500" />
 
-                      {/* Decorative Element */}
-                      <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-500" />
+                        {/* Decorative Element */}
+                        <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-500" />
 
-                      <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-end">
-                        <h3 className="text-2xl md:text-3xl font-serif font-bold text-white drop-shadow-md group-hover:scale-105 origin-bottom-left transition-transform duration-500">
-                          {category.name}
-                        </h3>
-                        {category.description && (
-                          <p className="text-white/80 text-sm mt-3 line-clamp-2 opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-100 font-medium">
-                            {category.description}
-                          </p>
-                        )}
+                        <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-end">
+                          <h3 className="text-2xl md:text-3xl font-serif font-bold text-white drop-shadow-md group-hover:scale-105 origin-bottom-left transition-transform duration-500">
+                            {category.name}
+                          </h3>
+                          {category.description && (
+                            <p className="text-white/80 text-sm mt-3 line-clamp-2 opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-100 font-medium">
+                              {category.description}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </section>
