@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { bookService } from '@/lib/api/services/book.service';
 import { BookResponse, PageResponse, SearchBookRequest, CategoryResponse } from '@/types';
@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export default function BooksPage() {
+function BooksPageContent() {
   const router = useRouter();
   const queryParams = useSearchParams();
   const { isAuthenticated } = useAuthStore();
@@ -535,5 +535,17 @@ export default function BooksPage() {
 
       <HomeFooter />
     </div>
+  );
+}
+
+export default function BooksPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen bg-[#FCFBFA]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#161B22]"></div>
+      </div>
+    }>
+      <BooksPageContent />
+    </Suspense>
   );
 }
