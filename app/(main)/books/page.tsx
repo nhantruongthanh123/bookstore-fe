@@ -86,6 +86,7 @@ export default function BooksPage() {
   useEffect(() => {
     const authorParam = queryParams.get('author');
     const categoryParam = queryParams.get('category');
+    const searchParam = queryParams.get('search');
 
     if (authorParam) {
       setAuthorInput(authorParam);
@@ -93,6 +94,10 @@ export default function BooksPage() {
     }
     if (categoryParam) {
       setSearchParams(prev => ({ ...prev, category: categoryParam }));
+    }
+    if (searchParam) {
+      setSearchInput(searchParam);
+      setSearchParams(prev => ({ ...prev, title: searchParam }));
     }
   }, [queryParams]);
 

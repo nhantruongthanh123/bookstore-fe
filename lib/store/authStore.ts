@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { UserResponse } from '@/types';
 import Cookies from 'js-cookie';
+import { clearTokens } from '@/lib/utils/token';
 
 interface AuthState {
   user: UserResponse | null;
@@ -31,8 +32,7 @@ export const useAuthStore = create<AuthState>()(
         }),
 
       clearAuth: () => {
-        Cookies.remove('accessToken');
-        Cookies.remove('refreshToken');
+        clearTokens();
         set({ user: null, isAuthenticated: false, isAdmin: false, isInitialized: true });
       },
 

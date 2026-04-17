@@ -24,7 +24,7 @@ export function HomeHeader() {
   const { user, isAuthenticated, clearAuth } = useAuthStore();
   const { cart, fetchCart } = useCartStore();
   const [googleAvatar, setGoogleAvatar] = useState<string | null>(null);
-  
+
   // Search State
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -102,9 +102,11 @@ export function HomeHeader() {
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#d9d7d1] px-4 py-4 md:px-8">
       <div className="flex items-center gap-8">
-        <p className="text-2xl font-semibold italic tracking-tight text-[#24304f]">
-          Book Shop
-        </p>
+        <Link href="/">
+          <p className="text-2xl font-semibold italic tracking-tight text-[#24304f]">
+            Book Shop
+          </p>
+        </Link>
         <nav className="flex items-center gap-5 text-sm text-[#6d6f79]">
           <Link
             href="/"
@@ -154,7 +156,7 @@ export function HomeHeader() {
             onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
             className="h-9 w-full rounded-md border border-[#d7d5cf] bg-[#ecebe8] pl-9 pr-3 text-sm placeholder:text-[#9c9da3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#bd380d]/30 transition-all font-sans"
           />
-          
+
           {/* Dropdown Popup */}
           {showDropdown && (
             <div className="absolute top-[calc(100%+8px)] w-full sm:w-[320px] sm:-right-0 sm:left-auto right-0 bg-white border border-[#d9d7d1] shadow-xl rounded-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
@@ -192,8 +194,8 @@ export function HomeHeader() {
                   <div
                     className="p-3 text-center bg-[#fcfbfa] hover:bg-[#ecebe8] text-[11px] font-bold text-[#cd5227] transition-colors uppercase tracking-widest cursor-pointer underline decoration-transparent hover:decoration-[#cd5227]"
                     onClick={() => {
-                        setShowDropdown(false);
-                        router.push(`/books?search=${encodeURIComponent(searchQuery)}`);
+                      setShowDropdown(false);
+                      router.push(`/books?search=${encodeURIComponent(searchQuery)}`);
                     }}
                   >
                     View all query results

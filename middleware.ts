@@ -12,7 +12,7 @@ export function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/orders') ||
     request.nextUrl.pathname.startsWith('/profile');
 
-  const isAdminPage = request.nextUrl.pathname.startsWith('/admin') || 
+  const isAdminPage = request.nextUrl.pathname.startsWith('/admin') ||
     request.nextUrl.pathname.startsWith('/dashboard');
 
   // Redirect authenticated users away from auth pages
@@ -32,10 +32,15 @@ export const config = {
   matcher: [
     '/login',
     '/register',
+    '/cart',
     '/cart/:path*',
+    '/orders',
     '/orders/:path*',
+    '/profile',
     '/profile/:path*',
+    '/admin',
     '/admin/:path*',
+    '/dashboard',
     '/dashboard/:path*',
   ],
 };
