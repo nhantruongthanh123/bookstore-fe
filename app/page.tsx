@@ -3,13 +3,17 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Star, TrendingUp, ChevronRight, Image as ImageIcon, Loader2 } from "lucide-react";
+import { ArrowRight, BookOpen, Star, TrendingUp, ChevronRight, Image as ImageIcon, Loader2, ShoppingCart, CheckCircle2 } from "lucide-react";
 import { HomeHeader } from "@/components/layout/home-header";
 import { HomeFooter } from "@/components/layout/home-footer";
 import { bookService } from "@/lib/api/services/book.service";
 import { authorService } from "@/lib/api/services/author.service";
 import { categoryService } from "@/lib/api/services/category.service";
 import { BookResponse, AuthorResponse, CategoryResponse } from "@/types";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/lib/store/authStore";
+import { useCartStore } from "@/lib/store/cartStore";
+import { Button } from "@/components/ui/button";
 
 const bgColors = [
   "bg-gradient-to-br from-[#06152f] to-[#122b54]",
@@ -23,10 +27,34 @@ const bgColors = [
 ];
 
 export default function Home() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
+  const { addToCart } = useCartStore();
+
   const [newBooks, setNewBooks] = useState<BookResponse[]>([]);
   const [authors, setAuthors] = useState<AuthorResponse[]>([]);
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [cartState, setCartState] = useState<Record<number, 'adding' | 'added'>>({});
+
+  const handleAddToCart = async (book: BookResponse) => {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    if (cartState[book.id]) return; // already in-flight
+    setCartState((prev) => ({ ...prev, [book.id]: 'adding' }));
+    try {
+      await addToCart({ bookId: book.id, quantity: 1 });
+      setCartState((prev) => ({ ...prev, [book.id]: 'added' }));
+      setTimeout(() => {
+        setCartState((prev) => { const next = { ...prev }; delete next[book.id]; return next; });
+      }, 2000);
+    } catch {
+      setCartState((prev) => { const next = { ...prev }; delete next[book.id]; return next; });
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -92,8 +120,8 @@ export default function Home() {
 
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-32">
-             <Loader2 className="w-12 h-12 animate-spin text-[#EE6337]" />
-             <p className="mt-6 text-[13px] font-bold uppercase tracking-widest text-gray-400">Curating the library...</p>
+            <Loader2 className="w-12 h-12 animate-spin text-[#EE6337]" />
+            <p className="mt-6 text-[13px] font-bold uppercase tracking-widest text-gray-400">Curating the library...</p>
           </div>
         ) : (
           <>
@@ -128,6 +156,24 @@ export default function Home() {
                           <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm text-[#161B22] text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-full shadow-sm">
                             NEW
                           </div>
+
+                          {/* Hover Add to Cart Overlay */}
+                          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-6">
+                            <Button
+                              variant="outline"
+                              onClick={(e) => { e.preventDefault(); handleAddToCart(book); }}
+                              disabled={!!cartState[book.id]}
+                              className={`w-full border-none shadow-lg gap-2 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 ${cartState[book.id] === 'added'
+                                ? 'bg-[#2F7E4C] hover:bg-[#2F7E4C] text-white'
+                                : 'bg-white/95 hover:bg-white text-[#161B22]'
+                                }`}
+                            >
+                              {cartState[book.id] === 'adding' && <Loader2 className="h-4 w-4 animate-spin" />}
+                              {cartState[book.id] === 'added' && <CheckCircle2 className="h-4 w-4" />}
+                              {!cartState[book.id] && <ShoppingCart className="h-4 w-4" />}
+                              {cartState[book.id] === 'adding' ? 'Adding...' : cartState[book.id] === 'added' ? 'Added!' : 'Add to Cart'}
+                            </Button>
+                          </div>
                         </div>
                         <div className="flex flex-col flex-1">
                           <h3 className="font-serif font-bold text-[18px] leading-snug text-[#161B22] group-hover:text-[#EE6337] transition-colors line-clamp-2 mb-1.5">
@@ -138,7 +184,6 @@ export default function Home() {
                           </p>
                           <div className="mt-auto pt-4 border-t border-[#EAE8E3]/50 flex items-center justify-between">
                             <span className="font-bold text-[18px] text-[#24304f]">${book.price.toFixed(2)}</span>
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-[#EE6337] opacity-0 group-hover:opacity-100 transition-opacity">Purchase →</span>
                           </div>
                         </div>
                       </div>
@@ -158,17 +203,17 @@ export default function Home() {
                   </h2>
                   <p className="text-gray-500 font-medium italic mt-3">Discover words crafted by the most esteemed minds of our curation.</p>
                 </div>
-                
+
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 max-w-4xl mx-auto">
                   {authors.map((author) => (
                     <Link key={author.id} href={`/books?search=${encodeURIComponent(author.name)}`} className="group flex flex-col items-center">
-                       <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-white shadow-sm border-[6px] border-white group-hover:border-[#EE6337]/20 flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] group-hover:-translate-y-2 relative">
-                           <span className="text-5xl font-serif font-bold text-gray-200 group-hover:text-[#EE6337]/40 transition-colors absolute">
-                              {author.name.charAt(0)}
-                           </span>
-                       </div>
-                       <h3 className="mt-6 font-serif font-bold text-[18px] text-[#161B22] text-center group-hover:text-[#EE6337] transition-colors">{author.name}</h3>
-                       <p className="text-[11px] text-gray-400 uppercase tracking-widest font-bold mt-1 text-center">View Works</p>
+                      <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-white shadow-sm border-[6px] border-white group-hover:border-[#EE6337]/20 flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] group-hover:-translate-y-2 relative">
+                        <span className="text-5xl font-serif font-bold text-gray-200 group-hover:text-[#EE6337]/40 transition-colors absolute">
+                          {author.name.charAt(0)}
+                        </span>
+                      </div>
+                      <h3 className="mt-6 font-serif font-bold text-[18px] text-[#161B22] text-center group-hover:text-[#EE6337] transition-colors">{author.name}</h3>
+                      <p className="text-[11px] text-gray-400 uppercase tracking-widest font-bold mt-1 text-center">View Works</p>
                     </Link>
                   ))}
                 </div>
@@ -191,7 +236,7 @@ export default function Home() {
                     <div key={category.id} className="group relative h-48 md:h-56 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all hover:-translate-y-1.5 cursor-pointer">
                       <div className={`absolute inset-0 opacity-80 group-hover:opacity-100 transition-opacity duration-500 ${bgColors[index % bgColors.length]}`} />
                       <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors duration-500" />
-                      
+
                       {/* Decorative Element */}
                       <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-500" />
 

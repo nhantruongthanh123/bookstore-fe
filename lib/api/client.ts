@@ -71,9 +71,14 @@ apiClient.interceptors.response.use(
       const refreshToken = getRefreshToken();
 
       if (!refreshToken) {
-        // Both tokens missing — clear everything and redirect
+        // Both tokens missing — clear everything
         useAuthStore.getState().clearAuth();
-        window.location.href = '/login';
+
+        // Only redirect to login if the request was made with an Authorization header
+        const hasAuthHeader = originalRequest.headers && originalRequest.headers.Authorization;
+        if (hasAuthHeader) {
+          window.location.href = '/login';
+        }
         return Promise.reject(error);
       }
 
