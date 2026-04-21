@@ -10,7 +10,7 @@ import { HomeFooter } from '@/components/layout/home-footer';
 import { HomeHeader } from '@/components/layout/home-header';
 import { fileService } from '@/lib/api/services/file.service';
 import { userService } from '@/lib/api/services/user.service';
-import Cookies from 'js-cookie';
+import { getAccessToken } from '@/lib/utils/token';
 
 export default function EditProfilePage() {
     const { user, setAuth, isInitialized, isAuthenticated } = useAuthStore();
@@ -71,7 +71,7 @@ export default function EditProfilePage() {
             });
         }
 
-        const token = Cookies.get("accessToken");
+        const token = getAccessToken();
         if (token) {
             try {
                 const payload = JSON.parse(atob(token.split(".")[1]));

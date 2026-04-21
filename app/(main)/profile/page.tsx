@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/store/authStore';
 import Link from 'next/link';
 import { ShoppingCart, ShoppingBag, BookMarked, PenTool, Pencil, Package } from 'lucide-react';
-import Cookies from 'js-cookie';
+import { getAccessToken } from '@/lib/utils/token';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { HomeFooter } from '@/components/layout/home-footer';
 import { HomeHeader } from '@/components/layout/home-header';
@@ -14,7 +14,7 @@ export default function ProfilePage() {
     const [googleAvatar, setGoogleAvatar] = useState<string | null>(null);
 
     useEffect(() => {
-        const token = Cookies.get("accessToken");
+        const token = getAccessToken();
         if (token) {
             try {
                 const payload = JSON.parse(atob(token.split(".")[1]));

@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Cookies from "js-cookie";
+import { getAccessToken } from "@/lib/utils/token";
 
 export function HomeHeader() {
   const { user, isAuthenticated, clearAuth } = useAuthStore();
@@ -76,7 +76,7 @@ export function HomeHeader() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      const token = Cookies.get("accessToken");
+      const token = getAccessToken();
       if (token) {
         try {
           // Decode the JWT payload to look for Google's picture claim
