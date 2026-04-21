@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  // Get auth state from HttpOnly refreshToken cookie (Signal that user IS logged in)
-  const authCookie = request.cookies.get('refreshToken');
+  // Get auth state from accessToken cookie
+  const authCookie = request.cookies.get('accessToken');
 
   const isAuthPage = request.nextUrl.pathname.startsWith('/login') ||
     request.nextUrl.pathname.startsWith('/register');

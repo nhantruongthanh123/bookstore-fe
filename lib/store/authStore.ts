@@ -11,7 +11,6 @@ interface AuthState {
 
   setAuth: (user: UserResponse) => void;
   clearAuth: () => Promise<void>;
-  clearLocalAuth: () => void;
   setInitialized: () => void;
 }
 
@@ -44,10 +43,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      clearLocalAuth: () => {
-        clearAccessToken();
-        set({ user: null, isAuthenticated: false, isAdmin: false, isInitialized: true });
-      },
 
       setInitialized: () => set({ isInitialized: true }),
     }),
