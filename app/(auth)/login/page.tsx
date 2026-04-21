@@ -9,7 +9,7 @@ import { AxiosError } from 'axios';
 import { authService } from '@/lib/api/services/auth.service';
 import { userService } from '@/lib/api/services/user.service';
 import { useAuthStore } from '@/lib/store/authStore';
-import { setTokens } from '@/lib/utils/token';
+import { setAccessToken } from '@/lib/utils/token';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,10 +41,8 @@ export default function LoginPage() {
 
       const response = await authService.login(data);
 
-      const { accessToken, refreshToken } = response;
-
-      // Store tokens first so the subsequent /users/me call is authenticated
-      setTokens(accessToken, refreshToken);
+      const { accessToken } = response;
+      setAccessToken(accessToken);
 
       const profile = await userService.getProfile();
       setAuth(profile);

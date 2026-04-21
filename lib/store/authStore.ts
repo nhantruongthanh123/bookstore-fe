@@ -1,8 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { UserResponse } from '@/types';
-import Cookies from 'js-cookie';
-import { clearTokens } from '@/lib/utils/token';
+import { clearAccessToken } from '@/lib/utils/token';
 
 interface AuthState {
   user: UserResponse | null;
@@ -11,7 +10,8 @@ interface AuthState {
   isInitialized: boolean;
 
   setAuth: (user: UserResponse) => void;
-  clearAuth: () => void;
+  clearAuth: () => Promise<void>;
+  clearLocalAuth: () => void;
   setInitialized: () => void;
 }
 
@@ -31,8 +31,21 @@ export const useAuthStore = create<AuthState>()(
           isInitialized: true,
         }),
 
-      clearAuth: () => {
-        clearTokens();
+      clearAuth: async () => {
+        // Dynamic import to avoid circular dependency
+        try {
+          const { authService } = await import('@/lib/api/services/auth.service');
+          await authService.logout();
+        } catch (error) {
+          console.error('Logout error:', error);
+        } finally {
+          clearAccessToken();
+          set({ user: null, isAuthenticated: false, isAdmin: false, isInitialized: true });
+        }
+      },
+
+      clearLocalAuth: () => {
+        clearAccessToken();
         set({ user: null, isAuthenticated: false, isAdmin: false, isInitialized: true });
       },
 

@@ -1,5 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { getAccessToken, getRefreshToken, setTokens } from '@/lib/utils/token';
+import { getAccessToken, setAccessToken } from '@/lib/utils/token';
 import { useAuthStore } from '@/lib/store/authStore';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
@@ -7,6 +7,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/a
 // Create axios instance
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
 });
 
 // Request interceptor - Add access token to every request
@@ -68,29 +69,17 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = getRefreshToken();
-
-      if (!refreshToken) {
-        // Both tokens missing — clear everything
-        useAuthStore.getState().clearAuth();
-
-        // Only redirect to login if the request was made with an Authorization header
-        const hasAuthHeader = originalRequest.headers && originalRequest.headers.Authorization;
-        if (hasAuthHeader) {
-          window.location.href = '/login';
-        }
-        return Promise.reject(error);
-      }
-
       try {
         // Call refresh token endpoint
-        const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-          refreshToken,
+        // Using axios directly to avoid request interceptor attaching old token
+        // and to send withCredentials for the HttpOnly cookie
+        const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {}, {
+          withCredentials: true
         });
 
-        const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data;
+        const { accessToken: newAccessToken } = response.data;
 
-        setTokens(newAccessToken, newRefreshToken);
+        setAccessToken(newAccessToken);
 
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -99,10 +88,17 @@ apiClient.interceptors.response.use(
         processQueue(null, newAccessToken);
         return apiClient(originalRequest);
       } catch (refreshError) {
-        // Refresh token is also expired/invalid — nuke everything
+        // Refresh token is also expired/invalid or missing — nuke everything
         processQueue(refreshError, null);
         useAuthStore.getState().clearAuth();
-        window.location.href = '/login';
+        
+        // Only redirect to login if the original request had an Authorization header
+        // meaning it was intended to be an authenticated request
+        const hasAuthHeader = originalRequest.headers && originalRequest.headers.Authorization;
+        if (hasAuthHeader && typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

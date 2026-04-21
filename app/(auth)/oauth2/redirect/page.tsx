@@ -4,7 +4,7 @@ import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/authStore';
 import apiClient from '@/lib/api/client';
-import Cookies from 'js-cookie';
+import { setAccessToken } from '@/lib/utils/token';
 
 function OAuth2RedirectHandler() {
   const router = useRouter();
@@ -14,7 +14,6 @@ function OAuth2RedirectHandler() {
   useEffect(() => {
     const handleRedirect = async () => {
       const accessToken = searchParams.get('accessToken');
-      const refreshToken = searchParams.get('refreshToken');
       const error = searchParams.get('error');
 
       if (error) {
@@ -23,10 +22,9 @@ function OAuth2RedirectHandler() {
         return;
       }
 
-      if (accessToken && refreshToken) {
+      if (accessToken) {
         try {
-          Cookies.set('accessToken', accessToken);
-          Cookies.set('refreshToken', refreshToken);
+          setAccessToken(accessToken);
 
           const response = await apiClient.get('/users/me');
 

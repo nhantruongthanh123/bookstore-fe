@@ -13,7 +13,6 @@ export interface RegisterRequest {
 
 export interface AuthResponse {
   accessToken: string;
-  refreshToken: string;
   type: string;
   expiresIn: number;
   id: number;
@@ -40,13 +39,9 @@ export interface UserResponse {
   gender?: string;
 }
 
-export interface TokenRefreshRequest {
-  refreshToken: string;
-}
 
 export interface TokenRefreshResponse {
   accessToken: string;
-  refreshToken: string;
   tokenType: string;
   expiresIn: number;
 }

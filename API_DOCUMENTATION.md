@@ -4,7 +4,7 @@
 
 **Version:** 1.0
 
-**Authentication:** Most endpoints require JWT Bearer token authentication. Include the token in the `Authorization` header as `Bearer <token>`.
+**Authentication:** Most endpoints require JWT Bearer token authentication. Include the token in the `Authorization` header as `Bearer <token>`. Refresh tokens are managed separately and also set as an `HttpOnly` cookie (`refreshToken`) during authentication flows.
 
 ---
 
@@ -50,15 +50,17 @@
 ```json
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "type": "Bearer",
-  "expiresIn": 3600000,
+  "expiresIn": 900,
   "id": 1,
   "username": "johndoe",
   "email": "johndoe@example.com",
   "roles": ["ROLE_USER"]
 }
 ```
+
+**Response Headers:**
+- `Set-Cookie: refreshToken=...; HttpOnly; Path=/; Max-Age=604800`
 
 **Error Responses:**
 
@@ -70,7 +72,7 @@
 
 ### 2. Login
 
-**Description:** Authenticate user and receive JWT tokens.
+**Description:** Authenticate user and receive an access token. A refresh token is also set as an `HttpOnly` cookie.
 
 **URL:** `POST /api/auth/login`
 
@@ -90,15 +92,17 @@
 ```json
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "type": "Bearer",
-  "expiresIn": 3600000,
+  "expiresIn": 900,
   "id": 1,
   "username": "johndoe",
   "email": "johndoe@example.com",
   "roles": ["ROLE_USER"]
 }
 ```
+
+**Response Headers:**
+- `Set-Cookie: refreshToken=...; HttpOnly; Path=/; Max-Age=604800`
 
 **Error Responses:**
 
@@ -110,18 +114,16 @@
 
 ### 3. Refresh Token
 
-**Description:** Refresh access token using refresh token.
+**Description:** Refresh access token using the current refresh token and rotate refresh token cookie.
 
 **URL:** `POST /api/auth/refresh`
 
-**Authentication:** None required (but refresh token needed in body)
+**Authentication:** None required (valid refresh token required)
 
 **Request Body:**
 
 ```json
-{
-  "refreshToken": "string (required)"
-}
+"refresh-token-value (required raw string)"
 ```
 
 **Success Response (200 OK):**
@@ -129,17 +131,48 @@
 ```json
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "tokenType": "Bearer",
-  "expiresIn": 3600000
+  "expiresIn": 900
 }
 ```
+
+**Response Headers:**
+- `Set-Cookie: refreshToken=...; HttpOnly; Path=/; Max-Age=604800`
 
 **Error Responses:**
 
 - **400 Bad Request:** Refresh token is required
 - **401 Unauthorized:** Invalid or expired refresh token
 - **500 Internal Server Error:** Server error
+
+---
+
+### 4. Google OAuth2 Login
+
+**Description:** Start Google OAuth2 authentication flow.
+
+**URL:** `GET /oauth2/authorization/google`
+
+**Authentication:** None required
+
+**Success Response:**
+- Redirects user to Google OAuth2 consent page.
+
+---
+
+### 5. OAuth2 Callback (Google)
+
+**Description:** OAuth2 callback endpoint handled by Spring Security. On success, backend sets refresh token cookie and redirects to frontend with access token query parameter.
+
+**URL:** `GET /login/oauth2/code/google`
+
+**Authentication:** None required
+
+**Success Response:**
+- Redirect to `app.oauth2.authorized-redirect-uri?accessToken=...`
+
+**Failure Response:**
+- Redirect to `app.frontend.login-url?error=...`
 
 ---
 
@@ -1435,18 +1468,18 @@ All error responses follow this standard format:
 
 ### How to Use JWT Tokens
 
-1. **Register or Login** to receive `accessToken` and `refreshToken`
+1. **Register or Login** to receive `accessToken`; backend also sets `refreshToken` as `HttpOnly` cookie
 2. **Include the access token** in the `Authorization` header for all protected endpoints:
    ```
    Authorization: Bearer <accessToken>
    ```
-3. **When access token expires**, use the `/api/auth/refresh` endpoint with the `refreshToken` to get a new `accessToken`
-4. **Store tokens securely** (e.g., httpOnly cookies or secure storage)
+3. **When access token expires**, call `/api/auth/refresh` with the current refresh token value (raw string body) to get a new `accessToken`
+4. **Refresh token is rotated** on successful refresh and returned via `Set-Cookie` (`HttpOnly`)
 
 ### Token Expiration
 
-- **Access Token:** Typically expires in 1 hour (3600000 ms)
-- **Refresh Token:** Longer expiration (check your backend configuration)
+- **Access Token:** 15 minutes (`jwt.access-token-expiration=900000` ms, response `expiresIn=900` seconds)
+- **Refresh Token:** 7 days (`jwt.refresh-token-expiration=604800000` ms)
 
 ---
 
@@ -1511,6 +1544,7 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: '/api',
+  withCredentials: true,
 });
 
 // Request interceptor to add token
@@ -1535,11 +1569,13 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        const { data } = await axios.post('/api/auth/refresh', { refreshToken });
+        const refreshToken = '<current-refresh-token>';
+        const { data } = await axios.post('/api/auth/refresh', refreshToken, {
+          withCredentials: true,
+          headers: { 'Content-Type': 'text/plain' }
+        });
         
         localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
         
         originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
         return api(originalRequest);
@@ -1564,7 +1600,6 @@ export default api;
 const login = async (credentials) => {
   const { data } = await api.post('/auth/login', credentials);
   localStorage.setItem('accessToken', data.accessToken);
-  localStorage.setItem('refreshToken', data.refreshToken);
   return data;
 };
 
@@ -1603,5 +1638,5 @@ const uploadImage = async (file) => {
 
 **Document Version:** 1.0  
 **Last Updated:** 2024-04-06  
-**Backend Framework:** Spring Boot 3.x  
+**Backend Framework:** Spring Boot 4.0.5  
 **Contact:** Backend Team

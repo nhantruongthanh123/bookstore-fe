@@ -67,10 +67,8 @@ export function AdminSidebar() {
         if (isSubItemActive) setIsShopOpen(true);
     }, [pathname]);
 
-    const handleLogout = () => {
-        clearAuth();
-        Cookies.remove('accessToken');
-        Cookies.remove('refreshToken');
+    const handleLogout = async () => {
+        await clearAuth();
         router.push('/login');
     };
 

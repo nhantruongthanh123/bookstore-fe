@@ -91,9 +91,8 @@ export function HomeHeader() {
     }
   }, [isAuthenticated]);
 
-  const handleLogout = () => {
-    Cookies.remove('accessToken');
-    clearAuth();
+  const handleLogout = async () => {
+    await clearAuth();
     router.push('/login');
   };
 

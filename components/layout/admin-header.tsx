@@ -20,9 +20,8 @@ export function AdminHeader() {
     const { user, clearAuth } = useAuthStore();
     const router = useRouter();
 
-    const handleLogout = () => {
-        Cookies.remove('accessToken');
-        clearAuth();
+    const handleLogout = async () => {
+        await clearAuth();
         router.push('/login');
     };
     return (

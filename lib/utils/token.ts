@@ -1,22 +1,14 @@
-import Cookies from 'js-cookie';
-
-const ACCESS_TOKEN_KEY = 'accessToken';
-const REFRESH_TOKEN_KEY = 'refreshToken';
+// In-memory storage for the access token to protect against XSS
+let _accessToken: string | null = null;
 
 export const getAccessToken = (): string | null => {
-  return Cookies.get(ACCESS_TOKEN_KEY) || null;
+  return _accessToken;
 };
 
-export const getRefreshToken = (): string | null => {
-  return Cookies.get(REFRESH_TOKEN_KEY) || null;
+export const setAccessToken = (token: string): void => {
+  _accessToken = token;
 };
 
-export const setTokens = (accessToken: string, refreshToken: string): void => {
-  Cookies.set(ACCESS_TOKEN_KEY, accessToken, { path: '/' });
-  Cookies.set(REFRESH_TOKEN_KEY, refreshToken, { path: '/' });
-};
-
-export const clearTokens = (): void => {
-  Cookies.remove(ACCESS_TOKEN_KEY, { path: '/' });
-  Cookies.remove(REFRESH_TOKEN_KEY, { path: '/' });
+export const clearAccessToken = (): void => {
+  _accessToken = null;
 };

@@ -12,9 +12,13 @@ export const authService = {
     return response.data;
   },
 
-  refreshToken: async (refreshToken: string): Promise<TokenRefreshResponse> => {
-    const response = await apiClient.post('/auth/refresh', { refreshToken });
+  refreshToken: async (): Promise<TokenRefreshResponse> => {
+    const response = await apiClient.post('/auth/refresh', {});
     return response.data;
+  },
+
+  logout: async (): Promise<void> => {
+    await apiClient.post('/auth/logout', {});
   },
 
   googleLogin: () => {
