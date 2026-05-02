@@ -15,7 +15,8 @@ import {
     Calendar,
 } from 'lucide-react';
 import { UserResponse } from '@/types/auth.types';
-import apiClient from '@/lib/api/client';
+import { userService } from '@/lib/api/services/user.service';
+import { PageResponse } from '@/types';
 import {
     Table,
     TableBody,
@@ -41,6 +42,9 @@ type StatusFilter = 'all' | 'active' | 'locked';
 export default function AdminUsersPage() {
     const [users, setUsers] = useState<UserResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [page, setPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalElements, setTotalElements] = useState(0);
 
     // Filters (client-side — list is bounded)
     const [filterName, setFilterName] = useState('');
@@ -50,12 +54,14 @@ export default function AdminUsersPage() {
     // Detail dialog
     const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
 
-    // Fetch all users (admin endpoint)
+    // Fetch users (admin endpoint)
     const fetchUsers = async () => {
         setIsLoading(true);
         try {
-            const response = await apiClient.get('/users/admin');
-            setUsers(response.data);
+            const data = await userService.getAllUsers(page, 10);
+            setUsers(data.content);
+            setTotalPages(data.totalPages);
+            setTotalElements(data.totalElements);
         } catch (error) {
             console.error('Failed to fetch users', error);
         } finally {
@@ -65,7 +71,7 @@ export default function AdminUsersPage() {
 
     useEffect(() => {
         fetchUsers();
-    }, []);
+    }, [page]);
 
     // Client-side filtering
     const filtered = users.filter((u) => {
@@ -348,16 +354,53 @@ export default function AdminUsersPage() {
                         </TableBody>
                     </Table>
 
-                    {/* Footer */}
-                    {!isLoading && filtered.length > 0 && (
-                        <div className="px-8 py-5 bg-[#F8F6F2]/50 border-t border-[#EAE8E3] flex items-center justify-between">
+                    {/* Footer / Pagination */}
+                    {!isLoading && (
+                        <div className="px-8 py-5 bg-[#F8F6F2]/50 border-t border-[#EAE8E3] flex flex-col sm:flex-row items-center justify-between gap-4">
                             <p className="text-[12px] font-medium text-gray-400">
                                 Showing{' '}
-                                <span className="text-[#161B22] font-bold">{filtered.length}</span>
-                                {' '}of{' '}
                                 <span className="text-[#161B22] font-bold">{users.length}</span>
+                                {' '}of{' '}
+                                <span className="text-[#161B22] font-bold">{totalElements}</span>
                                 {' '}members
                             </p>
+
+                            {totalPages > 1 && (
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={page === 0}
+                                        onClick={() => setPage(p => p - 1)}
+                                        className="h-9 border-[#EAE8E3] text-gray-600 rounded-lg"
+                                    >
+                                        Prev
+                                    </Button>
+                                    <div className="flex items-center gap-1">
+                                        {[...Array(totalPages)].map((_, i) => (
+                                            <button
+                                                key={i}
+                                                onClick={() => setPage(i)}
+                                                className={`w-9 h-9 rounded-lg text-[12px] font-bold transition-all ${page === i
+                                                    ? 'bg-[#161B22] text-white'
+                                                    : 'text-gray-400 hover:bg-gray-100'
+                                                    }`}
+                                            >
+                                                {i + 1}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={page >= totalPages - 1}
+                                        onClick={() => setPage(p => p + 1)}
+                                        className="h-9 border-[#EAE8E3] text-gray-600 rounded-lg"
+                                    >
+                                        Next
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
