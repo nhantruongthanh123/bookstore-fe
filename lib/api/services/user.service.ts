@@ -1,5 +1,6 @@
 import apiClient from '../client';
 import { UserResponse } from '@/types/auth.types';
+import { PageResponse } from '@/types';
 
 export interface UpdateUserProfileRequest {
   fullName?: string;
@@ -28,8 +29,8 @@ export const userService = {
     return response.data;
   },
 
-  getAllUsers: async (): Promise<UserResponse[]> => {
-    const response = await apiClient.get('/users/admin');
+  getAllUsers: async (page = 0, size = 10): Promise<PageResponse<UserResponse>> => {
+    const response = await apiClient.get('/users/admin', { params: { page, size } });
     return response.data;
   },
 };

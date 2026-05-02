@@ -78,7 +78,7 @@ export default function AdminCategoriesPage() {
         setIsLoading(true);
         try {
             const data = await categoryService.getAllCategories();
-            setCategories(data);
+            setCategories(data.content);
         } catch (error) {
             console.error('Failed to fetch categories', error);
         } finally {

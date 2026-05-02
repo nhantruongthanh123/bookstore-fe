@@ -91,7 +91,7 @@ export default function BookDetailPage() {
             ]);
 
             setBook(bookData);
-            setCategories(categoriesData);
+            setCategories(categoriesData.content);
 
             setSelectedAuthorOptions(bookData.authors.map((a: AuthorResponse) => ({
                 label: a.name,

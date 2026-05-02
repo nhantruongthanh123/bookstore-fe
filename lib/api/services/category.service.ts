@@ -1,9 +1,9 @@
 import apiClient from '../client';
-import { CategoryResponse, CategoryRequest } from '@/types';
+import { CategoryResponse, CategoryRequest, PageResponse } from '@/types';
 
 export const categoryService = {
-  getAllCategories: async (): Promise<CategoryResponse[]> => {
-    const response = await apiClient.get('/categories');
+  getAllCategories: async (page = 0, size = 100): Promise<PageResponse<CategoryResponse>> => {
+    const response = await apiClient.get('/categories', { params: { page, size } });
     return response.data;
   },
 

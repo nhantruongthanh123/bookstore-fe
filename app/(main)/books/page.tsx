@@ -72,7 +72,7 @@ function BooksPageContent() {
   const fetchCategories = async () => {
     try {
       const data = await categoryService.getAllCategories();
-      setCategories(data);
+      setCategories(data.content);
     } catch (error) {
       console.error('Failed to fetch categories:', error);
     }

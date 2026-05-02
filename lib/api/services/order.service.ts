@@ -7,8 +7,8 @@ export const orderService = {
     return response.data;
   },
 
-  getMyOrders: async (): Promise<OrderResponse[]> => {
-    const response = await apiClient.get('/orders');
+  getMyOrders: async (page = 0, size = 100): Promise<PageResponse<OrderResponse>> => {
+    const response = await apiClient.get('/orders', { params: { page, size } });
     return response.data;
   },
 

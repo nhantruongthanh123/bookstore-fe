@@ -67,7 +67,7 @@ export default function Home() {
         ]);
         setNewBooks(booksData.content || []);
         setAuthors(authorsData.content || []);
-        setCategories(categoriesData || []);
+        setCategories(categoriesData.content || []);
       } catch (err) {
         console.error("Failed to load home data", err);
       } finally {

@@ -517,27 +517,40 @@ No body content returned.
 
 ### 1. Get All Categories
 
-**Description:** Retrieve all categories.
+**Description:** Retrieve categories with pagination.
 
 **URL:** `GET /api/categories`
 
 **Authentication:** None required
 
+**Query Parameters:**
+
+- `page` (optional): Page number (default: 0)
+- `size` (optional): Page size (default: 20)
+- `sort` (optional): Sort field (default: name,ASC)
+
 **Success Response (200 OK):**
 
 ```json
-[
-  {
-    "id": 1,
-    "name": "Fiction",
-    "description": "Fictional works"
-  },
-  {
-    "id": 2,
-    "name": "Science",
-    "description": "Science books"
-  }
-]
+{
+  "content": [
+    {
+      "id": 1,
+      "name": "Fiction",
+      "description": "Fictional works"
+    },
+    {
+      "id": 2,
+      "name": "Science",
+      "description": "Science books"
+    }
+  ],
+  "pageNo": 0,
+  "pageSize": 20,
+  "totalElements": 12,
+  "totalPages": 1,
+  "last": true
+}
 ```
 
 **Error Responses:**
@@ -1137,14 +1150,11 @@ GET /api/orders/admin?page=0&size=10&sort=orderDate,DESC
       ]
     }
   ],
-  "pageable": {
-    "pageNumber": 0,
-    "pageSize": 10
-  },
+  "pageNo": 0,
+  "pageSize": 10,
   "totalPages": 5,
   "totalElements": 50,
-  "last": false,
-  "first": true
+  "last": false
 }
 ```
 
@@ -1355,7 +1365,41 @@ PATCH /api/orders/admin/1/status?status=SHIPPED
 
 **Authentication:** JWT Bearer Token required (Admin role)
 
-**Success Response (200 OK):** `UserResponse[]`
+**Query Parameters:**
+
+- `page` (optional): Page number (default: 0)
+- `size` (optional): Page size (default: 10)
+- `sort` (optional): Sort field (default: id,ASC)
+
+**Success Response (200 OK):**
+
+```json
+{
+  "content": [
+    {
+      "id": 1,
+      "username": "admin",
+      "email": "admin@example.com",
+      "fullName": "System Admin",
+      "phoneNumber": "0123456789",
+      "roles": ["ROLE_ADMIN"],
+      "enabled": true,
+      "accountNonLocked": true,
+      "createdAt": "2024-04-01T08:00:00",
+      "updatedAt": "2024-04-06T16:23:31",
+      "avatar": null,
+      "address": null,
+      "dateOfBirth": null,
+      "gender": null
+    }
+  ],
+  "pageNo": 0,
+  "pageSize": 10,
+  "totalElements": 50,
+  "totalPages": 5,
+  "last": false
+}
+```
 
 ---
 
@@ -1638,5 +1682,5 @@ const uploadImage = async (file) => {
 
 **Document Version:** 1.0  
 **Last Updated:** 2024-04-06  
-**Backend Framework:** Spring Boot 4.0.5  
+**Backend Framework:** Spring Boot 3.x  
 **Contact:** Backend Team

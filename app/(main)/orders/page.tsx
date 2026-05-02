@@ -54,6 +54,8 @@ export default function OrdersPage() {
     const { isAuthenticated, isInitialized } = useAuthStore();
     const [orders, setOrders] = useState<OrderResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [page, setPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
 
     useEffect(() => {
         if (isInitialized && !isAuthenticated) {
@@ -64,13 +66,15 @@ export default function OrdersPage() {
         if (isAuthenticated) {
             fetchOrders();
         }
-    }, [isAuthenticated, isInitialized, router]);
+    }, [isAuthenticated, isInitialized, router, page]);
 
     const fetchOrders = async () => {
+        setIsLoading(true);
         try {
-            const data = await orderService.getMyOrders();
+            const data = await orderService.getMyOrders(page, 10);
+            setTotalPages(data.totalPages);
             // Sort by date descending
-            const sorted = [...data].sort((a, b) => 
+            const sorted = [...data.content].sort((a, b) => 
                 new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()
             );
             setOrders(sorted);
@@ -188,6 +192,47 @@ export default function OrdersPage() {
                                 </div>
                             );
                         })}
+                    </div>
+                )}
+
+                {/* Pagination Controls */}
+                {!isLoading && totalPages > 1 && (
+                    <div className="mt-12 flex items-center justify-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={page === 0}
+                            onClick={() => setPage(p => p - 1)}
+                            className="border-[#EAE8E3] text-[#161B22] rounded-lg shadow-sm"
+                        >
+                            Previous
+                        </Button>
+
+                        <div className="flex items-center gap-1 mx-2 sm:mx-4 overflow-x-auto">
+                            {[...Array(totalPages)].map((_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setPage(i)}
+                                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-sm font-medium transition-all ${
+                                        page === i 
+                                        ? 'bg-[#161B22] text-white shadow-md' 
+                                        : 'text-gray-500 hover:bg-[#EAE8E3]/50'
+                                    }`}
+                                >
+                                    {i + 1}
+                                </button>
+                            ))}
+                        </div>
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={page >= totalPages - 1}
+                            onClick={() => setPage(p => p + 1)}
+                            className="border-[#EAE8E3] text-[#161B22] rounded-lg shadow-sm"
+                        >
+                            Next
+                        </Button>
                     </div>
                 )}
             </main>
